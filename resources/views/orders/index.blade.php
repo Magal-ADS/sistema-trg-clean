@@ -10,7 +10,7 @@
                     <p class="text-sm text-slate-500">{{ $order->customer_name }} - {{ $order->customer_email }}</p>
                     <p class="text-xs uppercase tracking-wide text-slate-400">{{ $order->status }} {{ $order->confirmed_at?->format('d/m/Y H:i') }}</p>
                 </div>
-                <p class="text-lg font-bold text-green-700">R$ {{ number_format((float) $order->total, 2, ',', '.') }}</p>
+                <p class="text-lg font-bold text-brand-primary">R$ {{ number_format((float) $order->total, 2, ',', '.') }}</p>
             </div>
         @empty
             <div class="p-6 text-sm text-slate-500">Nenhum pedido importado.</div>

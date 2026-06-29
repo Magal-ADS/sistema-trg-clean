@@ -11,14 +11,14 @@
         </div>
 
         <div>
-            <p class="text-sm font-semibold text-green-700">{{ $product->category?->name }}</p>
+            <p class="text-sm font-semibold text-brand-secondary">{{ $product->category?->name }}</p>
             <h1 class="mt-2 text-3xl font-bold">{{ $product->name }}</h1>
             <div class="mt-4">
                 @if($product->promotional_price)
                     <p class="text-sm text-slate-400 line-through">R$ {{ number_format((float) $product->price, 2, ',', '.') }}</p>
-                    <p class="text-3xl font-bold text-green-700">R$ {{ number_format((float) $product->promotional_price, 2, ',', '.') }}</p>
+                    <p class="text-3xl font-bold text-brand-primary">R$ {{ number_format((float) $product->promotional_price, 2, ',', '.') }}</p>
                 @else
-                    <p class="text-3xl font-bold text-green-700">R$ {{ number_format((float) $product->price, 2, ',', '.') }}</p>
+                    <p class="text-3xl font-bold text-brand-primary">R$ {{ number_format((float) $product->price, 2, ',', '.') }}</p>
                 @endif
             </div>
             <p class="mt-5 whitespace-pre-line text-sm leading-6 text-slate-600">{{ $product->description }}</p>

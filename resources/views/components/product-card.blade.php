@@ -15,9 +15,9 @@
             <div>
                 @if($product->promotional_price)
                     <p class="text-xs text-slate-400 line-through">R$ {{ number_format((float) $product->price, 2, ',', '.') }}</p>
-                    <p class="text-lg font-bold text-green-700">R$ {{ number_format((float) $product->promotional_price, 2, ',', '.') }}</p>
+                    <p class="text-lg font-bold text-brand-primary">R$ {{ number_format((float) $product->promotional_price, 2, ',', '.') }}</p>
                 @else
-                    <p class="text-lg font-bold text-green-700">R$ {{ number_format((float) $product->price, 2, ',', '.') }}</p>
+                    <p class="text-lg font-bold text-brand-primary">R$ {{ number_format((float) $product->price, 2, ',', '.') }}</p>
                 @endif
             </div>
         </div>

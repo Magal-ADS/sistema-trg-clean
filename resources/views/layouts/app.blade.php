@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#16a34a">
+    <meta name="theme-color" content="#0B2B54">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="TRG Clean">
     <meta name="mobile-web-app-capable" content="yes">
@@ -12,12 +12,11 @@
     <title>{{ $title ?? 'TRG Clean' }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-950 antialiased">
+<body class="min-h-screen bg-brand-ice text-slate-950 antialiased">
     <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div class="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
             <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-2">
-                <img src="/icons/icon.svg" alt="" class="h-9 w-9 rounded-xl">
-                <span class="text-lg font-bold text-green-700">TRG Clean</span>
+                <img src="/images/trg-logo.jpg" alt="TRG Clean" class="h-11 w-auto">
             </a>
 
             <form action="{{ route('products.index') }}" method="GET" class="hidden flex-1 md:block">
@@ -25,14 +24,14 @@
                     name="search"
                     value="{{ request('search') }}"
                     placeholder="Buscar produtos"
-                    class="h-11 w-full rounded-md border border-slate-300 bg-white px-4 text-sm outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+                    class="h-11 w-full rounded-md border border-slate-300 bg-white px-4 text-sm outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary-soft"
                 >
             </form>
 
             <nav class="ml-auto hidden items-center gap-6 text-sm font-semibold text-slate-700 md:flex">
-                <a href="{{ route('products.index') }}" class="hover:text-green-700">Produtos</a>
-                <a href="{{ route('cart.index') }}" class="hover:text-green-700">Carrinho</a>
-                <a href="{{ route('orders.index') }}" class="hover:text-green-700">Pedidos</a>
+                <a href="{{ route('products.index') }}" class="hover:text-brand-primary">Produtos</a>
+                <a href="{{ route('cart.index') }}" class="hover:text-brand-primary">Carrinho</a>
+                <a href="{{ route('orders.index') }}" class="hover:text-brand-primary">Pedidos</a>
             </nav>
         </div>
 
@@ -41,7 +40,7 @@
                 name="search"
                 value="{{ request('search') }}"
                 placeholder="Buscar produtos"
-                class="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-green-600"
+                class="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand-secondary"
             >
         </form>
     </header>

@@ -11,7 +11,7 @@
                 </div>
                 <div class="text-right">
                     <p class="text-sm text-slate-500">{{ $item->quantity }} x R$ {{ number_format((float) $item->unit_price, 2, ',', '.') }}</p>
-                    <p class="font-bold text-green-700">R$ {{ number_format((float) $item->total, 2, ',', '.') }}</p>
+                    <p class="font-bold text-brand-primary">R$ {{ number_format((float) $item->total, 2, ',', '.') }}</p>
                 </div>
             </div>
         @empty
