@@ -36,5 +36,6 @@ Route::get('/', function () {
 
 Route::get('/produtos', [ProductController::class, 'index'])->name('products.index');
 Route::get('/produtos/{product:slug}', [ProductController::class, 'show'])->name('products.show');
+Route::post('/produtos/{product:slug}/carrinho', [CartItemController::class, 'store'])->name('cart.store');
 Route::get('/carrinho', [CartItemController::class, 'index'])->name('cart.index');
 Route::get('/pedidos', [OrderController::class, 'index'])->name('orders.index');
