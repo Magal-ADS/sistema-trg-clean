@@ -95,7 +95,7 @@ class ImportGlideData extends Command
     private function upsertNamed(string $modelClass, array $row): void
     {
         $glideId = $this->first($row, ['id', 'row id', 'categoria id', 'subcategoria id', 'categoria de tamanho id', 'tamanho id', 'cor id', 'fragrancia id']);
-        $name = $this->first($row, ['nome', 'name', 'categoria', 'categorias nome', 'sub categoria', 'tamanho', 'cor', 'fragrancia']);
+        $name = $this->first($row, ['nome', 'name', 'categorias', 'categoria', 'categorias nome', 'sub categoria', 'tamanho', 'cor', 'fragrancia']);
 
         if (! $name && ! $glideId) {
             return;
@@ -108,6 +108,7 @@ class ImportGlideData extends Command
             'slug' => $this->uniqueSlug($modelClass, $name ?: $glideId, $glideId),
             'description' => $this->first($row, ['descricao', 'description']),
             'image_url' => $this->first($row, ['imagem', 'image', 'foto']),
+            'sort_order' => (int) ($this->first($row, ['ordem', 'order', 'sort order']) ?: 0),
             'is_active' => ! $this->boolean($this->first($row, ['indisponivel', 'inativo'])),
             'metadata' => $row,
         ]);

@@ -19,6 +19,7 @@ Route::get('/', function () {
         'categories' => Category::query()
             ->select(['id', 'name', 'slug'])
             ->where('is_active', true)
+            ->orderBy('sort_order')
             ->orderBy('name')
             ->limit(10)
             ->get(),

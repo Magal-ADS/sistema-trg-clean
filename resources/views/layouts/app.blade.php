@@ -14,9 +14,9 @@
 </head>
 <body class="min-h-screen bg-brand-ice text-slate-950 antialiased">
     <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div class="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
+        <div class="mx-auto flex h-20 max-w-7xl items-center gap-5 px-4">
             <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-2">
-                <img src="/images/trg-logo.jpg" alt="TRG Clean" class="h-11 w-auto">
+                <img src="/images/trg-logo.jpg" alt="TRG Clean" class="h-16 w-auto">
             </a>
 
             <form action="{{ route('products.index') }}" method="GET" class="hidden flex-1 md:block">
