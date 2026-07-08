@@ -7,5 +7,4 @@ storage/framework/sessions
 storage/framework/views
 storage/logs
 public/build
-*.csv
 .env
