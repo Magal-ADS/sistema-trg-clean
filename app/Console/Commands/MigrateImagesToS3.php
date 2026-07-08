@@ -280,12 +280,16 @@ class MigrateImagesToS3 extends Command
         }
 
         try {
+            $temporaryFile = $this->temporaryFilePath();
+
             $response = Http::timeout((int) $this->option('timeout'))
                 ->retry(2, 250)
                 ->withHeaders(['User-Agent' => 'TRG-Clean image migration'])
+                ->withOptions(['sink' => $temporaryFile])
                 ->get($url);
 
             if (! $response->successful()) {
+                @unlink($temporaryFile);
                 $this->imagesFailed++;
                 $this->warn("  download failed ({$response->status()}): {$url}");
                 $this->urlCache[$url] = null;
@@ -296,6 +300,7 @@ class MigrateImagesToS3 extends Command
             $contentType = Str::before((string) $response->header('Content-Type'), ';');
 
             if (! Str::startsWith($contentType, 'image/') && ! $this->hasImageExtension($url)) {
+                @unlink($temporaryFile);
                 $this->imagesSkipped++;
                 $this->warn("  skipped non-image response: {$url}");
                 $this->urlCache[$url] = null;
@@ -303,9 +308,19 @@ class MigrateImagesToS3 extends Command
                 return null;
             }
 
-            $uploaded = Storage::disk($disk)->put($path, $response->body(), [
-                'ContentType' => $contentType ?: $this->contentTypeFromPath($path),
-            ]);
+            $stream = fopen($temporaryFile, 'rb');
+
+            try {
+                $uploaded = Storage::disk($disk)->put($path, $stream, [
+                    'ContentType' => $contentType ?: $this->contentTypeFromPath($path),
+                ]);
+            } finally {
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+
+                @unlink($temporaryFile);
+            }
 
             if (! $uploaded) {
                 $this->imagesFailed++;
@@ -321,6 +336,10 @@ class MigrateImagesToS3 extends Command
 
             return $newUrl;
         } catch (\Throwable $exception) {
+            if (isset($temporaryFile) && is_string($temporaryFile)) {
+                @unlink($temporaryFile);
+            }
+
             $this->imagesFailed++;
             $this->warn("  migration failed: {$url} ({$exception->getMessage()})");
             $this->urlCache[$url] = null;
@@ -384,6 +403,23 @@ class MigrateImagesToS3 extends Command
         return in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg'], true)
             ? $extension
             : null;
+    }
+
+    private function temporaryFilePath(): string
+    {
+        $directory = storage_path('app/image-migration-tmp');
+
+        if (! is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $path = tempnam($directory, 'image-');
+
+        if ($path === false) {
+            throw new \RuntimeException("Unable to create temporary file in {$directory}");
+        }
+
+        return $path;
     }
 
     private function contentTypeFromPath(string $path): string
