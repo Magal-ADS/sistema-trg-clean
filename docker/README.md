@@ -1,5 +1,7 @@
 # Docker
 
+## Desenvolvimento
+
 Subir os containers:
 
 ```bash
@@ -112,4 +114,30 @@ Acessar o sistema:
 
 ```bash
 http://localhost:8004
+```
+
+## Produção
+
+Crie o `.env` de produção a partir do exemplo e ajuste pelo menos `APP_URL`, `APP_KEY` e `DB_PASSWORD`:
+
+```bash
+cp .env.production.example .env
+docker compose -f docker-compose.prod.yml run --rm app php artisan key:generate --show
+```
+
+Coloque a chave gerada em `APP_KEY` no `.env`. Depois suba a stack:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+O compose de produção cria uma imagem fechada com `composer install --no-dev`, `npm run build`, OPcache sem validação de timestamp, Nginx, PHP-FPM e Postgres com healthcheck.
+
+Comandos úteis em produção:
+
+```bash
+docker compose -f docker-compose.prod.yml logs -f
+docker compose -f docker-compose.prod.yml exec app php artisan optimize:clear
+docker compose -f docker-compose.prod.yml exec app php artisan migrate --force
+docker compose -f docker-compose.prod.yml down
 ```
