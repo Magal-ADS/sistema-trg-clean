@@ -12,15 +12,19 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Aws\S3\S3Client;
 
 class MigrateImagesToS3 extends Command
 {
     protected $signature = 'app:migrate-images-to-s3
         {--disk=s3 : Filesystem disk used as destination}
         {--prefix=imported-images : Destination folder inside the bucket}
+        {--public-url= : Public base URL stored in the database, for example a CDN URL}
         {--limit= : Maximum number of records to inspect}
         {--timeout=30 : Download timeout in seconds}
         {--dry-run : Show what would be migrated without downloading, uploading or saving}
+        {--rewrite-existing-urls : Rewrite existing destination URLs to --public-url or IMAGE_CDN_URL without reuploading}
+        {--refresh-cache-control : Apply long-lived Cache-Control to existing destination objects}
         {--force : Reprocess URLs even when they already look like the destination bucket}';
 
     protected $description = 'Downloads remote image URLs from the database, uploads them to S3 and updates the records.';
@@ -36,6 +40,10 @@ class MigrateImagesToS3 extends Command
 
     private int $imagesWouldUpload = 0;
 
+    private int $imagesRewritten = 0;
+
+    private int $imagesCacheControlRefreshed = 0;
+
     private int $imagesSkipped = 0;
 
     private int $imagesFailed = 0;
@@ -44,6 +52,7 @@ class MigrateImagesToS3 extends Command
     {
         $disk = (string) $this->option('disk');
         $prefix = trim((string) $this->option('prefix'), '/');
+        $publicUrl = $this->publicBaseUrl();
         $limit = $this->option('limit') !== null ? (int) $this->option('limit') : null;
 
         if ($prefix === '') {
@@ -62,13 +71,15 @@ class MigrateImagesToS3 extends Command
                 break;
             }
 
-            $this->processTarget($target, $disk, $prefix, $limit);
+            $this->processTarget($target, $disk, $prefix, $publicUrl, $limit);
         }
 
         $this->newLine();
         $this->info("Records inspected: {$this->recordsSeen}");
         $this->info($this->option('dry-run') ? "Records that would be updated: {$this->recordsUpdated}" : "Records updated: {$this->recordsUpdated}");
         $this->info($this->option('dry-run') ? "Images that would be uploaded: {$this->imagesWouldUpload}" : "Images uploaded: {$this->imagesUploaded}");
+        $this->info($this->option('dry-run') ? "Images that would be rewritten: {$this->imagesRewritten}" : "Images rewritten: {$this->imagesRewritten}");
+        $this->info($this->option('dry-run') ? "Images that would have cache refreshed: {$this->imagesCacheControlRefreshed}" : "Images cache refreshed: {$this->imagesCacheControlRefreshed}");
         $this->info("Images skipped: {$this->imagesSkipped}");
         $this->info("Images failed: {$this->imagesFailed}");
 
@@ -96,7 +107,7 @@ class MigrateImagesToS3 extends Command
     /**
      * @param array{class: class-string<Model>, folder: string} $target
      */
-    private function processTarget(array $target, string $disk, string $prefix, ?int $limit): void
+    private function processTarget(array $target, string $disk, string $prefix, ?string $publicUrl, ?int $limit): void
     {
         $class = $target['class'];
         $folder = $target['folder'];
@@ -118,6 +129,7 @@ class MigrateImagesToS3 extends Command
                     url: $model->getAttribute('image_url'),
                     disk: $disk,
                     path: $this->destinationPath($prefix, $folder, $model, $model->getAttribute('image_url')),
+                    publicUrl: $publicUrl,
                 );
 
                 if ($newUrl && $newUrl !== $model->getAttribute('image_url')) {
@@ -128,7 +140,7 @@ class MigrateImagesToS3 extends Command
             }
 
             if ($model instanceof Product && is_array($model->images)) {
-                [$images, $imagesChanged] = $this->migrateImageArray($model->images, $disk, $prefix, $folder, $model);
+                [$images, $imagesChanged] = $this->migrateImageArray($model->images, $disk, $prefix, $folder, $model, $publicUrl);
                 if ($imagesChanged) {
                     $originalUrls['images'] ??= $model->images;
                     $model->images = $images;
@@ -142,7 +154,8 @@ class MigrateImagesToS3 extends Command
                     $disk,
                     $prefix,
                     $folder,
-                    $model
+                    $model,
+                    $publicUrl
                 );
 
                 if ($metadataChanged) {
@@ -181,7 +194,7 @@ class MigrateImagesToS3 extends Command
     /**
      * @return array{0: array<mixed>, 1: bool}
      */
-    private function migrateImageArray(array $images, string $disk, string $prefix, string $folder, Model $model): array
+    private function migrateImageArray(array $images, string $disk, string $prefix, string $folder, Model $model, ?string $publicUrl): array
     {
         $changed = false;
 
@@ -194,6 +207,7 @@ class MigrateImagesToS3 extends Command
                 url: $value,
                 disk: $disk,
                 path: $this->destinationPath($prefix, $folder, $model, $value),
+                publicUrl: $publicUrl,
             );
 
             if ($newUrl && $newUrl !== $value) {
@@ -208,7 +222,7 @@ class MigrateImagesToS3 extends Command
     /**
      * @return array{0: array<mixed>, 1: bool}
      */
-    private function migrateMetadata(array $metadata, string $disk, string $prefix, string $folder, Model $model, array $keyPath = []): array
+    private function migrateMetadata(array $metadata, string $disk, string $prefix, string $folder, Model $model, ?string $publicUrl, array $keyPath = []): array
     {
         $changed = false;
 
@@ -220,7 +234,7 @@ class MigrateImagesToS3 extends Command
             $currentPath = [...$keyPath, (string) $key];
 
             if (is_array($value)) {
-                [$newValue, $valueChanged] = $this->migrateMetadata($value, $disk, $prefix, $folder, $model, $currentPath);
+                [$newValue, $valueChanged] = $this->migrateMetadata($value, $disk, $prefix, $folder, $model, $publicUrl, $currentPath);
                 if ($valueChanged) {
                     $metadata[$key] = $newValue;
                     $changed = true;
@@ -237,6 +251,7 @@ class MigrateImagesToS3 extends Command
                 url: $value,
                 disk: $disk,
                 path: $this->destinationPath($prefix, $folder, $model, $value),
+                publicUrl: $publicUrl,
             );
 
             if ($newUrl && $newUrl !== $value) {
@@ -248,7 +263,7 @@ class MigrateImagesToS3 extends Command
         return [$metadata, $changed];
     }
 
-    private function migrateUrl(string $url, string $disk, string $path): ?string
+    private function migrateUrl(string $url, string $disk, string $path, ?string $publicUrl): ?string
     {
         $url = trim($url);
 
@@ -259,6 +274,22 @@ class MigrateImagesToS3 extends Command
         }
 
         if (! $this->option('force') && $this->isAlreadyOnDestination($url)) {
+            if ($this->option('refresh-cache-control')) {
+                $this->refreshCacheControl($disk, $url);
+            }
+
+            if ($this->option('rewrite-existing-urls') && $publicUrl) {
+                $rewrittenUrl = $this->rewriteDestinationUrl($url, $publicUrl);
+
+                if ($rewrittenUrl && $rewrittenUrl !== $url) {
+                    $this->imagesRewritten++;
+                    $this->line("  rewritten: {$url}");
+                    $this->line("     target: {$rewrittenUrl}");
+
+                    return $rewrittenUrl;
+                }
+            }
+
             $this->imagesSkipped++;
 
             return null;
@@ -269,7 +300,7 @@ class MigrateImagesToS3 extends Command
         }
 
         if ($this->option('dry-run')) {
-            $newUrl = Storage::disk($disk)->url($path);
+            $newUrl = $this->publicUrlForPath($disk, $path, $publicUrl);
 
             $this->imagesWouldUpload++;
             $this->line("  would migrate: {$url}");
@@ -313,6 +344,7 @@ class MigrateImagesToS3 extends Command
             try {
                 $uploaded = Storage::disk($disk)->put($path, $stream, [
                     'ContentType' => $contentType ?: $this->contentTypeFromPath($path),
+                    'CacheControl' => 'public, max-age=31536000, immutable',
                 ]);
             } finally {
                 if (is_resource($stream)) {
@@ -330,7 +362,7 @@ class MigrateImagesToS3 extends Command
                 return null;
             }
 
-            $newUrl = Storage::disk($disk)->url($path);
+            $newUrl = $this->publicUrlForPath($disk, $path, $publicUrl);
             $this->imagesUploaded++;
             $this->urlCache[$url] = $newUrl;
 
@@ -372,6 +404,119 @@ class MigrateImagesToS3 extends Command
         }
 
         return $configuredUrl !== '' && Str::startsWith($url, rtrim($configuredUrl, '/').'/');
+    }
+
+    private function publicBaseUrl(): ?string
+    {
+        $publicUrl = $this->option('public-url') ?: env('IMAGE_CDN_URL');
+
+        return is_string($publicUrl) && trim($publicUrl) !== ''
+            ? rtrim(trim($publicUrl), '/')
+            : null;
+    }
+
+    private function publicUrlForPath(string $disk, string $path, ?string $publicUrl): string
+    {
+        if ($publicUrl) {
+            return $publicUrl.'/'.ltrim($path, '/');
+        }
+
+        return Storage::disk($disk)->url($path);
+    }
+
+    private function rewriteDestinationUrl(string $url, string $publicUrl): ?string
+    {
+        $path = $this->destinationRelativePathFromUrl($url);
+
+        return $path ? $publicUrl.'/'.ltrim($path, '/') : null;
+    }
+
+    private function refreshCacheControl(string $disk, string $url): void
+    {
+        $key = $this->destinationRelativePathFromUrl($url);
+        $bucket = (string) config("filesystems.disks.{$disk}.bucket");
+
+        if (! $key || $bucket === '') {
+            $this->imagesSkipped++;
+
+            return;
+        }
+
+        if ($this->option('dry-run')) {
+            $this->imagesCacheControlRefreshed++;
+            $this->line("  would refresh cache-control: {$url}");
+
+            return;
+        }
+
+        try {
+            $client = $this->s3Client($disk);
+            $head = $client->headObject([
+                'Bucket' => $bucket,
+                'Key' => $key,
+            ]);
+
+            $client->copyObject([
+                'Bucket' => $bucket,
+                'Key' => $key,
+                'CopySource' => $bucket.'/'.str_replace('%2F', '/', rawurlencode($key)),
+                'ContentType' => $head['ContentType'] ?? $this->contentTypeFromPath($key),
+                'CacheControl' => 'public, max-age=31536000, immutable',
+                'Metadata' => $head['Metadata'] ?? [],
+                'MetadataDirective' => 'REPLACE',
+            ]);
+
+            $this->imagesCacheControlRefreshed++;
+        } catch (\Throwable $exception) {
+            $this->imagesFailed++;
+            $this->warn("  cache-control refresh failed: {$url} ({$exception->getMessage()})");
+        }
+    }
+
+    private function s3Client(string $disk): S3Client
+    {
+        $config = [
+            'version' => 'latest',
+            'region' => config("filesystems.disks.{$disk}.region"),
+        ];
+
+        $key = config("filesystems.disks.{$disk}.key");
+        $secret = config("filesystems.disks.{$disk}.secret");
+        $endpoint = config("filesystems.disks.{$disk}.endpoint");
+
+        if ($key && $secret) {
+            $config['credentials'] = [
+                'key' => $key,
+                'secret' => $secret,
+            ];
+        }
+
+        if ($endpoint) {
+            $config['endpoint'] = $endpoint;
+        }
+
+        if (config("filesystems.disks.{$disk}.use_path_style_endpoint")) {
+            $config['use_path_style_endpoint'] = true;
+        }
+
+        return new S3Client($config);
+    }
+
+    private function destinationRelativePathFromUrl(string $url): ?string
+    {
+        $path = ltrim((string) parse_url($url, PHP_URL_PATH), '/');
+        $bucket = (string) config('filesystems.disks.s3.bucket');
+        $configuredUrl = (string) config('filesystems.disks.s3.url');
+
+        if ($configuredUrl !== '' && Str::startsWith($url, rtrim($configuredUrl, '/').'/')) {
+            return Str::after($url, rtrim($configuredUrl, '/').'/');
+        }
+
+        if ($bucket !== '' && Str::startsWith($path, $bucket.'/')) {
+            return Str::after($path, $bucket.'/');
+        }
+
+        return $path !== '' ? $path : null;
     }
 
     private function isImageCandidate(string $value, array $keyPath): bool
