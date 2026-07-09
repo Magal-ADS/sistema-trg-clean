@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\CartItemController;
+use App\Http\Controllers\AdminLaunchController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SellerLaunchController;
 use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Product;
@@ -39,3 +41,32 @@ Route::get('/produtos/{product:slug}', [ProductController::class, 'show'])->name
 Route::post('/produtos/{product:slug}/carrinho', [CartItemController::class, 'store'])->name('cart.store');
 Route::get('/carrinho', [CartItemController::class, 'index'])->name('cart.index');
 Route::get('/pedidos', [OrderController::class, 'index'])->name('orders.index');
+
+Route::get('/lancamentos', [SellerLaunchController::class, 'index'])->name('launches.index');
+Route::get('/lancamentos/login', fn () => redirect()->route('launches.index'));
+Route::post('/lancamentos/login', [SellerLaunchController::class, 'login'])->name('launches.login');
+Route::post('/lancamentos', [SellerLaunchController::class, 'store'])->name('launches.store');
+Route::get('/lancamentos/{entry}/editar', [SellerLaunchController::class, 'edit'])->name('launches.entries.edit');
+Route::put('/lancamentos/{entry}', [SellerLaunchController::class, 'update'])->name('launches.entries.update');
+Route::delete('/lancamentos/{entry}', [SellerLaunchController::class, 'destroy'])->name('launches.entries.destroy');
+Route::post('/lancamentos/logout', [SellerLaunchController::class, 'logout'])->name('launches.logout');
+
+Route::redirect('/app-lancamentos', '/lancamentos')->name('launches.shortcut');
+Route::redirect('/admin-lancamentos', '/admin/lancamentos')->name('launches.admin.shortcut');
+
+Route::prefix('admin/lancamentos')->name('launches.admin.')->group(function (): void {
+    Route::get('/login', [AdminLaunchController::class, 'loginForm'])->name('login');
+    Route::post('/login', [AdminLaunchController::class, 'login'])->name('login.store');
+    Route::post('/logout', [AdminLaunchController::class, 'logout'])->name('logout');
+
+    Route::get('/', [AdminLaunchController::class, 'dashboard'])->name('dashboard');
+    Route::get('/vendedoras', [AdminLaunchController::class, 'sellers'])->name('sellers');
+    Route::get('/vendedoras/nova', [AdminLaunchController::class, 'createSeller'])->name('sellers.create');
+    Route::post('/vendedoras', [AdminLaunchController::class, 'storeSeller'])->name('sellers.store');
+    Route::get('/vendedoras/{seller}/editar', [AdminLaunchController::class, 'editSeller'])->name('sellers.edit');
+    Route::put('/vendedoras/{seller}', [AdminLaunchController::class, 'updateSeller'])->name('sellers.update');
+
+    Route::get('/entradas/{entry}/editar', [AdminLaunchController::class, 'editEntry'])->name('entries.edit');
+    Route::put('/entradas/{entry}', [AdminLaunchController::class, 'updateEntry'])->name('entries.update');
+    Route::delete('/entradas/{entry}', [AdminLaunchController::class, 'destroyEntry'])->name('entries.destroy');
+});

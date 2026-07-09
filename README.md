@@ -20,6 +20,63 @@ O projeto usa Laravel com PostgreSQL e possui importador de dados exportados do 
 - Paginas de carrinho e pedidos.
 - Estrutura de dados para catalogo, variacoes, cupons, servicos e pedidos.
 - Comando Artisan para importar CSVs exportados do Glide.
+- App de lancamentos para vendedoras com area administrativa.
+
+## Lancamentos de Vendedoras
+
+Atalhos de acesso:
+
+- Vendedora: `/app-lancamentos`
+- Admin: `/admin-lancamentos`
+
+Rotas finais:
+
+- Vendedora: `/lancamentos`
+- Admin: `/admin/lancamentos/login`
+
+Admin inicial criado pela migration:
+
+- E-mail: `admin@weagles.com`
+- Senha: `123`
+
+Para criar as tabelas do modulo:
+
+```bash
+php artisan migrate
+```
+
+Para criar os acessos iniciais:
+
+```bash
+php artisan db:seed
+```
+
+Se estiver usando Docker, rode o comando dentro do container da aplicacao:
+
+```bash
+docker compose exec app php artisan migrate
+docker compose exec app php artisan db:seed
+```
+
+Credenciais criadas pelo seed:
+
+- Admin: `admin@weagles.com` / `123`
+- Vendedora teste: `vendedora@weagles.com` / `1234`
+
+Tabelas criadas pelas migrations:
+
+- `launch_admin_accounts`
+- `seller_accounts`
+- `seller_daily_entries`
+
+Fluxo basico de teste:
+
+1. Acesse `/admin-lancamentos`.
+2. Entre com `admin@weagles.com` e senha `123`.
+3. Cadastre uma vendedora em `Vendedoras`.
+4. Acesse `/app-lancamentos`.
+5. Entre como a vendedora cadastrada, ou use `Vendedora Teste` com senha `1234`, e salve um lancamento.
+6. Volte ao admin e confira o lancamento no relatorio.
 
 ## Docker
 

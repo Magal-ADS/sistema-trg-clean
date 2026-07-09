@@ -1,6 +1,5 @@
-const CACHE_NAME = 'trg-clean-v1';
+const CACHE_NAME = 'trg-clean-v2';
 const CORE_ASSETS = [
-    '/',
     '/manifest.json',
     '/icons/icon.svg'
 ];
@@ -26,13 +25,24 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    const acceptsHtml = event.request.headers.get('accept')?.includes('text/html');
+
+    if (event.request.mode === 'navigate' || acceptsHtml) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
+            if (! response.ok) {
+                return response;
+            }
+
             const copy = response.clone();
 
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
 
             return response;
-        }).catch(() => caches.match('/')))
+        }))
     );
 });
