@@ -1,90 +1,39 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-            <h1 class="text-2xl font-bold">Lançamentos dos vendedores</h1>
-            <p class="mt-1 text-sm text-slate-500">Acompanhe e corrija os lançamentos registrados pelo app.</p>
+    @php
+        $moduleCards = [
+            ['label' => 'Lançamentos', 'url' => route('launches.admin.entries.index')],
+        ];
+
+        foreach (\App\Http\Controllers\AdminCatalogController::menu() as $item) {
+            $moduleCards[] = [
+                'label' => $item['label'],
+                'url' => route('launches.admin.modules.index', $item['module']),
+            ];
+        }
+
+        $moduleCards[] = ['label' => 'Vendedores', 'url' => route('launches.admin.sellers')];
+        $moduleCards[] = ['label' => 'Configurações do Catálogo', 'url' => route('launches.admin.catalog.settings')];
+        $moduleCards[] = ['label' => 'Administradores', 'url' => route('launches.admin.admins')];
+    @endphp
+
+    <div>
+        <div class="mb-5 flex items-center justify-between gap-3">
+            <div>
+                <h1 class="text-xl font-bold">Administrador</h1>
+                <p class="mt-1 text-sm text-slate-500">Escolha um módulo para gerenciar.</p>
+            </div>
+            <a href="{{ route('home') }}" class="hidden h-10 items-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary sm:inline-flex">Site</a>
         </div>
-        <div class="flex flex-col gap-2 sm:flex-row">
-            <a href="{{ route('home') }}" class="inline-flex h-10 items-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Voltar para o site</a>
-            <a href="{{ route('launches.admin.sellers') }}" class="inline-flex h-10 items-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Vendedores</a>
-            <a href="{{ route('launches.admin.admins') }}" class="inline-flex h-10 items-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Admins</a>
-            <form action="{{ route('launches.admin.logout') }}" method="POST">
-                @csrf
-                <button class="h-10 rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-red-300 hover:text-red-600">Sair</button>
-            </form>
+
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            @foreach($moduleCards as $card)
+                <a href="{{ $card['url'] }}" class="flex min-h-20 items-center justify-between rounded-md border border-slate-200 bg-white px-4 py-4 text-sm font-bold text-slate-800 shadow-sm hover:border-brand-secondary hover:bg-brand-secondary-soft">
+                    <span>{{ $card['label'] }}</span>
+                    <span class="text-lg font-normal text-slate-400">&rsaquo;</span>
+                </a>
+            @endforeach
         </div>
     </div>
-
-    <form action="{{ route('launches.admin.dashboard') }}" method="GET" class="mt-6 grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-4">
-        <label class="text-sm font-semibold text-slate-800">De
-            <input name="date_from" type="date" value="{{ $dateFrom }}" class="mt-2 h-10 w-full rounded-md border border-slate-300 px-3 text-sm">
-        </label>
-        <label class="text-sm font-semibold text-slate-800">Até
-            <input name="date_to" type="date" value="{{ $dateTo }}" class="mt-2 h-10 w-full rounded-md border border-slate-300 px-3 text-sm">
-        </label>
-        <label class="text-sm font-semibold text-slate-800">Vendedor
-            <select name="seller_id" class="mt-2 h-10 w-full rounded-md border border-slate-300 px-3 text-sm">
-                <option value="">Todas</option>
-                @foreach($sellers as $seller)
-                    <option value="{{ $seller->id }}" @selected($sellerId === $seller->id)>{{ $seller->name }}</option>
-                @endforeach
-            </select>
-        </label>
-        <div class="flex items-end">
-            <button class="h-10 w-full rounded-md bg-brand-primary px-4 text-sm font-bold text-white hover:bg-brand-secondary">Filtrar</button>
-        </div>
-    </form>
-
-    <div class="mt-5 grid gap-3 md:grid-cols-3">
-        <div class="rounded-lg border border-slate-200 bg-white p-4">
-            <p class="text-sm text-slate-500">Atividades</p>
-            <strong class="text-2xl">{{ $opportunities }}</strong>
-        </div>
-        <div class="rounded-lg border border-slate-200 bg-white p-4">
-            <p class="text-sm text-slate-500">Quantidade de vendas</p>
-            <strong class="text-2xl">{{ $salesCount }}</strong>
-        </div>
-        <div class="rounded-lg border border-slate-200 bg-white p-4">
-            <p class="text-sm text-slate-500">Valor total das vendas</p>
-            <strong class="text-2xl text-brand-primary">R$ {{ number_format((float) $salesTotal, 2, ',', '.') }}</strong>
-        </div>
-    </div>
-
-    <div class="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-white">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200 text-sm">
-                <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
-                    <tr>
-                        <th class="px-4 py-3">Data</th>
-                        <th class="px-4 py-3">Vendedor</th>
-                        <th class="px-4 py-3">Atividades</th>
-                        <th class="px-4 py-3">Quantidade de vendas</th>
-                        <th class="px-4 py-3">Valor total das vendas</th>
-                        <th class="px-4 py-3"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    @forelse($entries as $entry)
-                        <tr>
-                            <td class="px-4 py-3">{{ $entry->entry_date->format('d/m/Y') }}</td>
-                            <td class="px-4 py-3 font-semibold">{{ $entry->seller?->name }}</td>
-                            <td class="px-4 py-3 text-slate-600">Liga&ccedil;&otilde;es {{ $entry->presential_count }} | Agendamentos {{ $entry->instagram_count }} | Visitas {{ $entry->whatsapp_count }}</td>
-                            <td class="px-4 py-3">{{ $entry->sales_count }}</td>
-                            <td class="px-4 py-3 font-bold text-brand-primary">R$ {{ number_format((float) $entry->sales_total, 2, ',', '.') }}</td>
-                            <td class="px-4 py-3 text-right">
-                                <a href="{{ route('launches.admin.entries.edit', $entry) }}" class="font-semibold text-brand-secondary hover:text-brand-primary">Editar</a>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-4 py-6 text-center text-slate-500">Nenhum lançamento no período.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="mt-5">{{ $entries->links() }}</div>
 @endsection

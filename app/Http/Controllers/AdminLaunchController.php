@@ -51,6 +51,15 @@ class AdminLaunchController extends Controller
             return redirect()->route('launches.login.form');
         }
 
+        return view('launches.admin-dashboard');
+    }
+
+    public function entries(Request $request): View|RedirectResponse
+    {
+        if (! $this->isAdminLogged($request)) {
+            return redirect()->route('launches.login.form');
+        }
+
         $dateFrom = $request->string('date_from')->toString() ?: now()->startOfMonth()->toDateString();
         $dateTo = $request->string('date_to')->toString() ?: now()->toDateString();
         $sellerId = $request->integer('seller_id') ?: null;
@@ -62,7 +71,7 @@ class AdminLaunchController extends Controller
 
         $summaryEntries = (clone $entriesQuery)->get();
 
-        return view('launches.admin-dashboard', [
+        return view('launches.admin-entries', [
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'sellerId' => $sellerId,
@@ -242,7 +251,7 @@ class AdminLaunchController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
-        return redirect()->route('launches.admin.dashboard')->with('status', 'Lançamento atualizado.');
+        return redirect()->route('launches.admin.entries.index')->with('status', 'Lançamento atualizado.');
     }
 
     public function destroyEntry(Request $request, SellerDailyEntry $entry): RedirectResponse
@@ -253,7 +262,7 @@ class AdminLaunchController extends Controller
 
         $entry->delete();
 
-        return redirect()->route('launches.admin.dashboard')->with('status', 'Lançamento excluído.');
+        return redirect()->route('launches.admin.entries.index')->with('status', 'Lançamento excluído.');
     }
 
     public function logout(Request $request): RedirectResponse

@@ -12,7 +12,6 @@ use App\Models\HomeSetting;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\SellerCity;
 use App\Models\Service;
 use App\Models\Size;
 use App\Models\SizeCategory;
@@ -61,7 +60,6 @@ class ImportGlideData extends Command
             $this->importNamed($basePath, 'Produtos.csv', fn (array $row) => $this->upsertProduct($row));
             $this->importNamed($basePath, 'Valores Tamanhos e fragrancias.csv', fn (array $row) => $this->upsertVariationPrice($row));
             $this->importNamed($basePath, 'Serviços.csv', fn (array $row) => $this->upsertService($row));
-            $this->importNamed($basePath, 'Vendedoras e cidades.csv', fn (array $row) => $this->upsertSellerCity($row));
             $this->importNamed($basePath, 'To do list.csv', fn (array $row) => $this->upsertTodo($row));
             $this->importNamed($basePath, 'Pedidos confirmados.csv', fn (array $row) => $this->upsertOrder($row));
             $this->importNamed($basePath, 'Produtos no carrinho.csv', fn (array $row) => $this->upsertCartOrOrderItem($row));
@@ -292,24 +290,6 @@ class ImportGlideData extends Command
                 'description' => $this->first($row, ['descricao']),
                 'price' => $this->nullableMoney($this->first($row, ['valor', 'preco'])),
                 'image_url' => $this->first($row, ['imagem']),
-                'metadata' => $row,
-            ]
-        );
-    }
-
-    private function upsertSellerCity(array $row): void
-    {
-        $seller = $this->first($row, ['nome da vendedora', 'vendedora', 'nome']) ?: 'Vendedor';
-        $city = $this->first($row, ['cidade', 'cidade da vendedora']) ?: 'Cidade nao informada';
-
-        SellerCity::updateOrCreate(
-            ['glide_id' => $this->first($row, ['id']) ?: $this->stableKey($seller.$city)],
-            [
-                'seller_name' => $seller,
-                'seller_email' => $this->first($row, ['email', 'email da vendedora']),
-                'seller_phone' => $this->first($row, ['telefone', 'celular da vendedora']),
-                'city' => $city,
-                'state' => $this->first($row, ['estado', 'uf']),
                 'metadata' => $row,
             ]
         );

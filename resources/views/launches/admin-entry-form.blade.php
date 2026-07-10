@@ -7,7 +7,7 @@
                 <h1 class="text-2xl font-bold">Editar lancamento</h1>
                 <p class="mt-1 text-sm text-slate-500">Corrija os dados enviados pelo vendedor.</p>
             </div>
-            <a href="{{ route('launches.admin.dashboard') }}" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Voltar para lancamentos</a>
+            <a href="{{ route('launches.admin.entries.index') }}" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Voltar</a>
         </div>
 
         <form action="{{ route('launches.admin.entries.update', $entry) }}" method="POST" class="space-y-4 rounded-lg border border-slate-200 bg-white p-5">
@@ -51,7 +51,7 @@
 
             <div class="flex flex-col gap-3 sm:flex-row">
                 <button class="h-11 rounded-md bg-brand-primary px-5 text-sm font-bold text-white hover:bg-brand-secondary">Salvar alteracao</button>
-                <a href="{{ route('launches.admin.dashboard') }}" class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Cancelar</a>
+                <a href="{{ route('launches.admin.entries.index') }}" class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Cancelar</a>
             </div>
         </form>
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\AdminLaunchController;
+use App\Http\Controllers\AdminCatalogController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SellerLaunchController;
@@ -60,6 +61,8 @@ Route::prefix('admin/lancamentos')->name('launches.admin.')->group(function (): 
     Route::post('/logout', [AdminLaunchController::class, 'logout'])->name('logout');
 
     Route::get('/', [AdminLaunchController::class, 'dashboard'])->name('dashboard');
+    Route::get('/entradas', [AdminLaunchController::class, 'entries'])->name('entries.index');
+    Route::get('/configuracoes-catalogo', [AdminCatalogController::class, 'settings'])->name('catalog.settings');
     Route::redirect('/vendedoras', '/admin/lancamentos/vendedores')->name('sellers.legacy');
     Route::redirect('/vendedoras/nova', '/admin/lancamentos/vendedores/novo')->name('sellers.create.legacy');
     Route::get('/vendedores', [AdminLaunchController::class, 'sellers'])->name('sellers');
@@ -77,4 +80,13 @@ Route::prefix('admin/lancamentos')->name('launches.admin.')->group(function (): 
     Route::get('/entradas/{entry}/editar', [AdminLaunchController::class, 'editEntry'])->name('entries.edit');
     Route::put('/entradas/{entry}', [AdminLaunchController::class, 'updateEntry'])->name('entries.update');
     Route::delete('/entradas/{entry}', [AdminLaunchController::class, 'destroyEntry'])->name('entries.destroy');
+
+    Route::prefix('modulos/{module}')->name('modules.')->group(function (): void {
+        Route::get('/', [AdminCatalogController::class, 'index'])->name('index');
+        Route::get('/novo', [AdminCatalogController::class, 'create'])->name('create');
+        Route::post('/', [AdminCatalogController::class, 'store'])->name('store');
+        Route::get('/{id}/editar', [AdminCatalogController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [AdminCatalogController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdminCatalogController::class, 'destroy'])->name('destroy');
+    });
 });

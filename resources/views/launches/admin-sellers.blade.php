@@ -7,7 +7,7 @@
             <p class="mt-1 text-sm text-slate-500">Cadastre acessos para o app de lançamentos.</p>
         </div>
         <div class="flex flex-col gap-2 sm:flex-row">
-            <a href="{{ route('launches.admin.dashboard') }}" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Voltar para lancamentos</a>
+            <a href="{{ route('launches.admin.dashboard') }}" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Voltar aos modulos</a>
             <a href="{{ route('launches.admin.sellers.create') }}" class="inline-flex h-10 items-center justify-center rounded-md bg-brand-primary px-4 text-sm font-bold text-white hover:bg-brand-secondary">Novo vendedor</a>
         </div>
     </div>
