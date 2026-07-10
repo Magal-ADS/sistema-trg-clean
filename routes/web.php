@@ -60,11 +60,13 @@ Route::prefix('admin/lancamentos')->name('launches.admin.')->group(function (): 
     Route::post('/logout', [AdminLaunchController::class, 'logout'])->name('logout');
 
     Route::get('/', [AdminLaunchController::class, 'dashboard'])->name('dashboard');
-    Route::get('/vendedoras', [AdminLaunchController::class, 'sellers'])->name('sellers');
-    Route::get('/vendedoras/nova', [AdminLaunchController::class, 'createSeller'])->name('sellers.create');
-    Route::post('/vendedoras', [AdminLaunchController::class, 'storeSeller'])->name('sellers.store');
-    Route::get('/vendedoras/{seller}/editar', [AdminLaunchController::class, 'editSeller'])->name('sellers.edit');
-    Route::put('/vendedoras/{seller}', [AdminLaunchController::class, 'updateSeller'])->name('sellers.update');
+    Route::redirect('/vendedoras', '/admin/lancamentos/vendedores')->name('sellers.legacy');
+    Route::redirect('/vendedoras/nova', '/admin/lancamentos/vendedores/novo')->name('sellers.create.legacy');
+    Route::get('/vendedores', [AdminLaunchController::class, 'sellers'])->name('sellers');
+    Route::get('/vendedores/novo', [AdminLaunchController::class, 'createSeller'])->name('sellers.create');
+    Route::post('/vendedores', [AdminLaunchController::class, 'storeSeller'])->name('sellers.store');
+    Route::get('/vendedores/{seller}/editar', [AdminLaunchController::class, 'editSeller'])->name('sellers.edit');
+    Route::put('/vendedores/{seller}', [AdminLaunchController::class, 'updateSeller'])->name('sellers.update');
 
     Route::get('/entradas/{entry}/editar', [AdminLaunchController::class, 'editEntry'])->name('entries.edit');
     Route::put('/entradas/{entry}', [AdminLaunchController::class, 'updateEntry'])->name('entries.update');

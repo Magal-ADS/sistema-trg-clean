@@ -27,7 +27,7 @@
             <div>
                 <label for="seller_account_id" class="text-sm font-semibold text-slate-800">Quem é você?</label>
                 <select id="seller_account_id" name="seller_account_id" required class="mt-2 h-12 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary-soft">
-                    <option value="">Selecione a vendedora</option>
+                    <option value="">Selecione o vendedor</option>
                     @foreach($sellers as $seller)
                         <option value="{{ $seller->id }}" @selected(old('seller_account_id') == $seller->id)>
                             {{ $seller->name }}{{ $seller->city ? ' - '.$seller->city : '' }}

@@ -299,7 +299,7 @@ class ImportGlideData extends Command
 
     private function upsertSellerCity(array $row): void
     {
-        $seller = $this->first($row, ['nome da vendedora', 'vendedora', 'nome']) ?: 'Vendedora';
+        $seller = $this->first($row, ['nome da vendedora', 'vendedora', 'nome']) ?: 'Vendedor';
         $city = $this->first($row, ['cidade', 'cidade da vendedora']) ?: 'Cidade nao informada';
 
         SellerCity::updateOrCreate(

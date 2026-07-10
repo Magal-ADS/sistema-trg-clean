@@ -3,12 +3,12 @@
 @section('content')
     <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-            <h1 class="text-2xl font-bold">Lançamentos das vendedoras</h1>
+            <h1 class="text-2xl font-bold">Lançamentos dos vendedores</h1>
             <p class="mt-1 text-sm text-slate-500">Acompanhe e corrija os lançamentos registrados pelo app.</p>
         </div>
         <div class="flex flex-col gap-2 sm:flex-row">
             <a href="{{ route('home') }}" class="inline-flex h-10 items-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Voltar para o site</a>
-            <a href="{{ route('launches.admin.sellers') }}" class="inline-flex h-10 items-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Vendedoras</a>
+            <a href="{{ route('launches.admin.sellers') }}" class="inline-flex h-10 items-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Vendedores</a>
             <form action="{{ route('launches.admin.logout') }}" method="POST">
                 @csrf
                 <button class="h-10 rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-red-300 hover:text-red-600">Sair</button>
@@ -23,7 +23,7 @@
         <label class="text-sm font-semibold text-slate-800">Até
             <input name="date_to" type="date" value="{{ $dateTo }}" class="mt-2 h-10 w-full rounded-md border border-slate-300 px-3 text-sm">
         </label>
-        <label class="text-sm font-semibold text-slate-800">Vendedora
+        <label class="text-sm font-semibold text-slate-800">Vendedor
             <select name="seller_id" class="mt-2 h-10 w-full rounded-md border border-slate-300 px-3 text-sm">
                 <option value="">Todas</option>
                 @foreach($sellers as $seller)
@@ -57,7 +57,7 @@
                 <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
                     <tr>
                         <th class="px-4 py-3">Data</th>
-                        <th class="px-4 py-3">Vendedora</th>
+                        <th class="px-4 py-3">Vendedor</th>
                         <th class="px-4 py-3">Atividades</th>
                         <th class="px-4 py-3">Quantidade de vendas</th>
                         <th class="px-4 py-3">Valor total das vendas</th>

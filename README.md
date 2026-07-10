@@ -1,6 +1,6 @@
 # TRG Clean
 
-Sistema web da TRG Clean desenvolvido em Laravel para organizar e exibir catalogo de produtos, categorias, subcategorias, banners, cupons, pedidos, carrinho, servicos, tamanhos, fragrancias, cores e dados de vendedoras/cidades.
+Sistema web da TRG Clean desenvolvido em Laravel para organizar e exibir catalogo de produtos, categorias, subcategorias, banners, cupons, pedidos, carrinho, servicos, tamanhos, fragrancias, cores e dados de vendedores/cidades.
 
 O projeto usa Laravel com PostgreSQL e possui importador de dados exportados do Glide em CSV, permitindo migrar informacoes de produtos, usuarios, pedidos e configuracoes para as tabelas da aplicacao.
 
@@ -20,18 +20,18 @@ O projeto usa Laravel com PostgreSQL e possui importador de dados exportados do 
 - Paginas de carrinho e pedidos.
 - Estrutura de dados para catalogo, variacoes, cupons, servicos e pedidos.
 - Comando Artisan para importar CSVs exportados do Glide.
-- App de lancamentos para vendedoras com area administrativa.
+- App de lancamentos para vendedores com area administrativa.
 
-## Lancamentos de Vendedoras
+## Lancamentos de Vendedores
 
 Atalhos de acesso:
 
-- Vendedora: `/app-lancamentos`
+- Vendedor: `/app-lancamentos`
 - Admin: `/admin-lancamentos`
 
 Rotas finais:
 
-- Vendedora: `/lancamentos`
+- Vendedor: `/lancamentos`
 - Admin: `/admin/lancamentos/login`
 
 Admin inicial criado pela migration:
@@ -61,7 +61,7 @@ docker compose exec app php artisan db:seed
 Credenciais criadas pelo seed:
 
 - Admin: `admin@weagles.com` / `123`
-- Vendedora teste: `vendedora@weagles.com` / `1234`
+- Vendedor teste: `vendedor@weagles.com` / `1234`
 
 Tabelas criadas pelas migrations:
 
@@ -73,9 +73,9 @@ Fluxo basico de teste:
 
 1. Acesse `/admin-lancamentos`.
 2. Entre com `admin@weagles.com` e senha `123`.
-3. Cadastre uma vendedora em `Vendedoras`.
+3. Cadastre um vendedor em `Vendedores`.
 4. Acesse `/app-lancamentos`.
-5. Entre como a vendedora cadastrada, ou use `Vendedora Teste` com senha `1234`, e salve um lancamento.
+5. Entre como o vendedor cadastrado, ou use `Vendedor Teste` com senha `1234`, e salve um lancamento.
 6. Volte ao admin e confira o lancamento no relatorio.
 
 ## Docker

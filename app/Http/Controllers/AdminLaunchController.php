@@ -107,7 +107,7 @@ class AdminLaunchController extends Controller
 
         SellerAccount::query()->create($validated);
 
-        return redirect()->route('launches.admin.sellers')->with('status', 'Vendedora cadastrada.');
+        return redirect()->route('launches.admin.sellers')->with('status', 'Vendedor cadastrado.');
     }
 
     public function editSeller(Request $request, SellerAccount $seller): View|RedirectResponse
@@ -133,7 +133,7 @@ class AdminLaunchController extends Controller
 
         $seller->update($validated);
 
-        return redirect()->route('launches.admin.sellers')->with('status', 'Vendedora atualizada.');
+        return redirect()->route('launches.admin.sellers')->with('status', 'Vendedor atualizado.');
     }
 
     public function editEntry(Request $request, SellerDailyEntry $entry): View|RedirectResponse
@@ -209,13 +209,13 @@ class AdminLaunchController extends Controller
             'password' => [$seller ? 'nullable' : 'required', 'string', 'min:4', 'max:255'],
             'is_active' => ['nullable', 'boolean'],
         ], [
-            'name.required' => 'Informe o nome da vendedora.',
+            'name.required' => 'Informe o nome do vendedor.',
             'email.email' => 'Informe um e-mail valido.',
-            'email.unique' => 'Ja existe uma vendedora usando este e-mail.',
-            'password.required' => 'Informe uma senha ou PIN para a vendedora.',
+            'email.unique' => 'Ja existe um vendedor usando este e-mail.',
+            'password.required' => 'Informe uma senha ou PIN para o vendedor.',
             'password.min' => 'A senha ou PIN precisa ter pelo menos 4 caracteres.',
             'password.max' => 'A senha ou PIN pode ter no maximo 255 caracteres.',
-            'is_active.boolean' => 'O status da vendedora e invalido.',
+            'is_active.boolean' => 'O status do vendedor e invalido.',
         ]) + ['is_active' => false];
     }
 

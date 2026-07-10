@@ -37,9 +37,9 @@ class DatabaseSeeder extends Seeder
         );
 
         SellerAccount::query()->updateOrCreate(
-            ['email' => 'vendedora@weagles.com'],
+            ['email' => 'vendedor@weagles.com'],
             [
-                'name' => 'Vendedora Teste',
+                'name' => 'Vendedor Teste',
                 'phone' => null,
                 'city' => 'Teste',
                 'state' => 'SP',

@@ -60,7 +60,7 @@ class SellerLaunchController extends Controller
             ->find($validated['seller_account_id']);
 
         if (! $seller || ! Hash::check($validated['password'], $seller->password)) {
-            return back()->withErrors(['password' => 'Vendedora ou senha inválida.'])->withInput();
+            return back()->withErrors(['password' => 'Vendedor ou senha inválida.'])->withInput();
         }
 
         $request->session()->put('launch_seller_id', $seller->id);

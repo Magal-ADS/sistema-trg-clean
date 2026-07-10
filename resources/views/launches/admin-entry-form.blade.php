@@ -5,7 +5,7 @@
         <div class="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h1 class="text-2xl font-bold">Editar lancamento</h1>
-                <p class="mt-1 text-sm text-slate-500">Corrija os dados enviados pela vendedora.</p>
+                <p class="mt-1 text-sm text-slate-500">Corrija os dados enviados pelo vendedor.</p>
             </div>
             <a href="{{ route('launches.admin.dashboard') }}" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Voltar para lancamentos</a>
         </div>
@@ -15,7 +15,7 @@
             @method('PUT')
 
             <div>
-                <label for="seller_account_id" class="text-sm font-semibold text-slate-800">Vendedora</label>
+                <label for="seller_account_id" class="text-sm font-semibold text-slate-800">Vendedor</label>
                 <select id="seller_account_id" name="seller_account_id" required class="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-secondary">
                     @foreach($sellers as $seller)
                         <option value="{{ $seller->id }}" @selected(old('seller_account_id', $entry->seller_account_id) == $seller->id)>{{ $seller->name }}</option>

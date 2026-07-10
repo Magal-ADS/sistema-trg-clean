@@ -4,7 +4,7 @@
     <div class="mx-auto max-w-md rounded-lg border border-slate-200 bg-white p-6">
         <a href="{{ route('home') }}" class="mb-5 inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Voltar para o site</a>
         <h1 class="text-2xl font-bold">Admin de lançamentos</h1>
-        <p class="mt-1 text-sm text-slate-500">Acesse para gerenciar vendedoras e lançamentos.</p>
+        <p class="mt-1 text-sm text-slate-500">Acesse para gerenciar vendedores e lançamentos.</p>
 
         <form action="{{ route('launches.admin.login.store') }}" method="POST" class="mt-6 space-y-4">
             @csrf
