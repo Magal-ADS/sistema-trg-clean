@@ -13,10 +13,19 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-brand-ice text-slate-950 antialiased">
+    @php
+        $mobileNavItems = [
+            ['label' => 'Inicio', 'route' => 'home', 'active' => request()->routeIs('home')],
+            ['label' => 'Produtos', 'route' => 'products.index', 'active' => request()->routeIs('products.*')],
+            ['label' => 'Carrinho', 'route' => 'cart.index', 'active' => request()->routeIs('cart.*')],
+            ['label' => 'Pedidos', 'route' => 'orders.index', 'active' => request()->routeIs('orders.*')],
+        ];
+    @endphp
+
     <header class="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div class="mx-auto flex h-20 max-w-7xl items-center gap-5 px-4">
+        <div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 md:h-20 md:gap-5">
             <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-2">
-                <img src="/images/trg-logo.jpg" alt="TRG Clean" class="h-16 w-auto">
+                <img src="/images/trg-logo.jpg" alt="TRG Clean" class="h-11 w-auto md:h-16">
             </a>
 
             <form action="{{ route('products.index') }}" method="GET" class="hidden flex-1 md:block">
@@ -27,6 +36,17 @@
                     class="h-11 w-full rounded-md border border-slate-300 bg-white px-4 text-sm outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary-soft"
                 >
             </form>
+
+            <nav class="ml-auto grid flex-1 grid-cols-4 items-end gap-1 text-center text-[11px] font-semibold text-slate-600 md:hidden">
+                @foreach($mobileNavItems as $item)
+                    <a
+                        href="{{ route($item['route']) }}"
+                        class="border-b-2 px-1 pb-2 pt-3 leading-none transition {{ $item['active'] ? 'border-brand-secondary text-brand-primary' : 'border-transparent hover:text-brand-primary' }}"
+                    >
+                        {{ $item['label'] }}
+                    </a>
+                @endforeach
+            </nav>
 
             <nav class="ml-auto hidden items-center gap-6 text-sm font-semibold text-slate-700 md:flex">
                 <a href="{{ route('products.index') }}" class="hover:text-brand-primary">Produtos</a>
@@ -45,7 +65,7 @@
         </form>
     </header>
 
-    <main class="mx-auto max-w-7xl px-4 pb-24 pt-6 md:pb-10">
+    <main class="mx-auto max-w-7xl px-4 pb-10 pt-6">
         @if(session('status'))
             <div class="mb-5 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
                 {{ session('status') }}
@@ -67,14 +87,5 @@
             <span>Atendimento rapido pelo WhatsApp.</span>
         </div>
     </footer>
-
-    <nav class="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white md:hidden">
-        <div class="grid h-16 grid-cols-4 text-xs font-semibold text-slate-600">
-            <a href="{{ route('home') }}" class="flex flex-col items-center justify-center gap-1">Inicio</a>
-            <a href="{{ route('products.index') }}" class="flex flex-col items-center justify-center gap-1">Produtos</a>
-            <a href="{{ route('cart.index') }}" class="flex flex-col items-center justify-center gap-1">Carrinho</a>
-            <a href="{{ route('orders.index') }}" class="flex flex-col items-center justify-center gap-1">Pedidos</a>
-        </div>
-    </nav>
 </body>
 </html>
