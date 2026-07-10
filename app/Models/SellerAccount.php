@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SellerAccount extends Model
@@ -11,6 +12,7 @@ class SellerAccount extends Model
         'name',
         'email',
         'phone',
+        'city_id',
         'city',
         'state',
         'password',
@@ -32,5 +34,10 @@ class SellerAccount extends Model
     public function dailyEntries(): HasMany
     {
         return $this->hasMany(SellerDailyEntry::class);
+    }
+
+    public function cityRecord(): BelongsTo
+    {
+        return $this->belongsTo(City::class, 'city_id');
     }
 }

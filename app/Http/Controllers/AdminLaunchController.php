@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LaunchAdminAccount;
+use App\Models\City;
 use App\Models\SellerAccount;
 use App\Models\SellerDailyEntry;
 use Illuminate\Contracts\View\View;
@@ -94,7 +95,10 @@ class AdminLaunchController extends Controller
         }
 
         return view('launches.admin-sellers', [
-            'sellers' => SellerAccount::query()->orderBy('name')->paginate(30),
+            'sellers' => SellerAccount::query()
+                ->with('cityRecord:id,name,state')
+                ->orderBy('name')
+                ->paginate(30),
         ]);
     }
 
@@ -104,7 +108,10 @@ class AdminLaunchController extends Controller
             return redirect()->route('launches.login.form');
         }
 
-        return view('launches.admin-seller-form', ['seller' => new SellerAccount()]);
+        return view('launches.admin-seller-form', [
+            'seller' => new SellerAccount(),
+            'cities' => City::query()->where('is_active', true)->orderBy('name')->get(),
+        ]);
     }
 
     public function storeSeller(Request $request): RedirectResponse
@@ -115,7 +122,7 @@ class AdminLaunchController extends Controller
 
         $validated = $this->sellerData($request);
 
-        SellerAccount::query()->create($validated);
+        SellerAccount::query()->create($this->sellerPayload($validated));
 
         return redirect()->route('launches.admin.sellers')->with('status', 'Vendedor cadastrado.');
     }
@@ -126,7 +133,16 @@ class AdminLaunchController extends Controller
             return redirect()->route('launches.login.form');
         }
 
-        return view('launches.admin-seller-form', ['seller' => $seller]);
+        return view('launches.admin-seller-form', [
+            'seller' => $seller,
+            'cities' => City::query()
+                ->where(function ($query) use ($seller): void {
+                    $query->where('is_active', true)
+                        ->orWhereKey($seller->city_id);
+                })
+                ->orderBy('name')
+                ->get(),
+        ]);
     }
 
     public function updateSeller(Request $request, SellerAccount $seller): RedirectResponse
@@ -141,9 +157,70 @@ class AdminLaunchController extends Controller
             unset($validated['password']);
         }
 
-        $seller->update($validated);
+        $seller->update($this->sellerPayload($validated));
 
         return redirect()->route('launches.admin.sellers')->with('status', 'Vendedor atualizado.');
+    }
+
+    public function cities(Request $request): View|RedirectResponse
+    {
+        if (! $this->isAdminLogged($request)) {
+            return redirect()->route('launches.login.form');
+        }
+
+        return view('launches.admin-cities', [
+            'cities' => City::query()
+                ->withCount('sellers')
+                ->orderBy('name')
+                ->paginate(30),
+        ]);
+    }
+
+    public function createCity(Request $request): View|RedirectResponse
+    {
+        if (! $this->isAdminLogged($request)) {
+            return redirect()->route('launches.login.form');
+        }
+
+        return view('launches.admin-city-form', ['city' => new City()]);
+    }
+
+    public function storeCity(Request $request): RedirectResponse
+    {
+        if (! $this->isAdminLogged($request)) {
+            return redirect()->route('launches.login.form');
+        }
+
+        City::query()->create($this->cityData($request));
+
+        return redirect()->route('launches.admin.cities')->with('status', 'Cidade cadastrada.');
+    }
+
+    public function editCity(Request $request, City $city): View|RedirectResponse
+    {
+        if (! $this->isAdminLogged($request)) {
+            return redirect()->route('launches.login.form');
+        }
+
+        return view('launches.admin-city-form', ['city' => $city]);
+    }
+
+    public function updateCity(Request $request, City $city): RedirectResponse
+    {
+        if (! $this->isAdminLogged($request)) {
+            return redirect()->route('launches.login.form');
+        }
+
+        $city->update($this->cityData($request, $city));
+
+        SellerAccount::query()
+            ->where('city_id', $city->id)
+            ->update([
+                'city' => $city->name,
+                'state' => $city->state,
+            ]);
+
+        return redirect()->route('launches.admin.cities')->with('status', 'Cidade atualizada.');
     }
 
     public function admins(Request $request): View|RedirectResponse
@@ -279,18 +356,49 @@ class AdminLaunchController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255', Rule::unique('seller_accounts', 'email')->ignore($seller)],
             'phone' => ['nullable', 'string', 'max:50'],
-            'city' => ['nullable', 'string', 'max:120'],
-            'state' => ['nullable', 'string', 'max:50'],
+            'city_id' => ['required', 'integer', 'exists:cities,id'],
             'password' => [$seller ? 'nullable' : 'required', 'string', 'min:4', 'max:255'],
             'is_active' => ['nullable', 'boolean'],
         ], [
             'name.required' => 'Informe o nome do vendedor.',
             'email.email' => 'Informe um e-mail valido.',
             'email.unique' => 'Ja existe um vendedor usando este e-mail.',
+            'city_id.required' => 'Selecione a cidade do vendedor.',
+            'city_id.exists' => 'A cidade selecionada e invalida.',
             'password.required' => 'Informe uma senha ou PIN para o vendedor.',
             'password.min' => 'A senha ou PIN precisa ter pelo menos 4 caracteres.',
             'password.max' => 'A senha ou PIN pode ter no maximo 255 caracteres.',
             'is_active.boolean' => 'O status do vendedor e invalido.',
+        ]) + ['is_active' => false];
+    }
+
+    private function sellerPayload(array $validated): array
+    {
+        $city = City::query()->find($validated['city_id']);
+
+        return $validated + [
+            'city' => $city?->name,
+            'state' => $city?->state,
+        ];
+    }
+
+    private function cityData(Request $request, ?City $city = null): array
+    {
+        return $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:120',
+                Rule::unique('cities', 'name')
+                    ->where(fn ($query) => $query->where('state', $request->input('state')))
+                    ->ignore($city),
+            ],
+            'state' => ['nullable', 'string', 'max:50'],
+            'is_active' => ['nullable', 'boolean'],
+        ], [
+            'name.required' => 'Informe o nome da cidade.',
+            'name.unique' => 'Esta cidade ja esta cadastrada para este estado.',
+            'is_active.boolean' => 'O status da cidade e invalido.',
         ]) + ['is_active' => false];
     }
 

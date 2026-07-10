@@ -28,19 +28,20 @@
                 </div>
                 <div>
                     <label for="phone" class="text-sm font-semibold text-slate-800">Telefone</label>
-                    <input id="phone" name="phone" value="{{ old('phone', $seller->phone) }}" class="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-secondary">
+                    <input id="phone" name="phone" value="{{ old('phone', $seller->phone) }}" inputmode="tel" maxlength="15" data-phone-mask placeholder="(16) 99999-9999" class="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-secondary">
                 </div>
             </div>
 
-            <div class="grid gap-4 md:grid-cols-2">
-                <div>
-                    <label for="city" class="text-sm font-semibold text-slate-800">Cidade</label>
-                    <input id="city" name="city" value="{{ old('city', $seller->city) }}" class="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-secondary">
-                </div>
-                <div>
-                    <label for="state" class="text-sm font-semibold text-slate-800">Estado</label>
-                    <input id="state" name="state" value="{{ old('state', $seller->state) }}" class="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-secondary">
-                </div>
+            <div>
+                <label for="city_id" class="text-sm font-semibold text-slate-800">Cidade</label>
+                <select id="city_id" name="city_id" required class="mt-2 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand-secondary">
+                    <option value="">Selecione uma cidade</option>
+                    @foreach($cities as $city)
+                        <option value="{{ $city->id }}" @selected((int) old('city_id', $seller->city_id) === $city->id)>
+                            {{ $city->name }}{{ $city->state ? ' - '.$city->state : '' }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
 
             <div>

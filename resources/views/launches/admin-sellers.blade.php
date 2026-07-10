@@ -17,7 +17,7 @@
             <div class="flex flex-col gap-3 border-b border-slate-100 p-4 last:border-b-0 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h2 class="font-bold">{{ $seller->name }}</h2>
-                    <p class="text-sm text-slate-500">{{ collect([$seller->phone, $seller->email, $seller->city])->filter()->join(' | ') }}</p>
+                    <p class="text-sm text-slate-500">{{ collect([$seller->phone, $seller->email, $seller->cityRecord?->name ?? $seller->city])->filter()->join(' | ') }}</p>
                     <p class="mt-1 text-xs font-semibold {{ $seller->is_active ? 'text-emerald-600' : 'text-red-600' }}">{{ $seller->is_active ? 'Ativo' : 'Inativo' }}</p>
                 </div>
                 <a href="{{ route('launches.admin.sellers.edit', $seller) }}" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Editar</a>

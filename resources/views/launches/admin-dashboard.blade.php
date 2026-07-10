@@ -14,6 +14,7 @@
         }
 
         $moduleCards[] = ['label' => 'Vendedores', 'url' => route('launches.admin.sellers')];
+        $moduleCards[] = ['label' => 'Cidades', 'url' => route('launches.admin.cities')];
         $moduleCards[] = ['label' => 'Configurações do Catálogo', 'url' => route('launches.admin.catalog.settings')];
         $moduleCards[] = ['label' => 'Administradores', 'url' => route('launches.admin.admins')];
     @endphp

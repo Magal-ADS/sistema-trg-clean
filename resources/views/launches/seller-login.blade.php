@@ -30,7 +30,7 @@
                     <option value="">Selecione o vendedor</option>
                     @foreach($sellers as $seller)
                         <option value="{{ $seller->id }}" @selected(old('seller_account_id') == $seller->id)>
-                            {{ $seller->name }}{{ $seller->city ? ' - '.$seller->city : '' }}
+                            {{ $seller->name }}{{ ($seller->cityRecord?->name ?? $seller->city) ? ' - '.($seller->cityRecord?->name ?? $seller->city) : '' }}
                         </option>
                     @endforeach
                 </select>

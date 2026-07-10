@@ -41,6 +41,7 @@ Route::get('/produtos', [ProductController::class, 'index'])->name('products.ind
 Route::get('/produtos/{product:slug}', [ProductController::class, 'show'])->name('products.show');
 Route::post('/produtos/{product:slug}/carrinho', [CartItemController::class, 'store'])->name('cart.store');
 Route::get('/carrinho', [CartItemController::class, 'index'])->name('cart.index');
+Route::post('/carrinho/fechar', [CartItemController::class, 'checkout'])->name('cart.checkout');
 Route::get('/pedidos', [OrderController::class, 'index'])->name('orders.index');
 
 Route::get('/lancamentos', [SellerLaunchController::class, 'index'])->name('launches.index');
@@ -70,6 +71,12 @@ Route::prefix('admin/lancamentos')->name('launches.admin.')->group(function (): 
     Route::post('/vendedores', [AdminLaunchController::class, 'storeSeller'])->name('sellers.store');
     Route::get('/vendedores/{seller}/editar', [AdminLaunchController::class, 'editSeller'])->name('sellers.edit');
     Route::put('/vendedores/{seller}', [AdminLaunchController::class, 'updateSeller'])->name('sellers.update');
+
+    Route::get('/cidades', [AdminLaunchController::class, 'cities'])->name('cities');
+    Route::get('/cidades/nova', [AdminLaunchController::class, 'createCity'])->name('cities.create');
+    Route::post('/cidades', [AdminLaunchController::class, 'storeCity'])->name('cities.store');
+    Route::get('/cidades/{city}/editar', [AdminLaunchController::class, 'editCity'])->name('cities.edit');
+    Route::put('/cidades/{city}', [AdminLaunchController::class, 'updateCity'])->name('cities.update');
 
     Route::get('/admins', [AdminLaunchController::class, 'admins'])->name('admins');
     Route::get('/admins/novo', [AdminLaunchController::class, 'createAdmin'])->name('admins.create');

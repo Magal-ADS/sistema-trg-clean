@@ -364,21 +364,8 @@ class ImportGlideData extends Command
             return;
         }
 
-        CartItem::updateOrCreate(
-            ['glide_id' => $this->stableKey(json_encode($row))],
-            [
-                'user_id' => User::where('email', Str::lower((string) $this->first($row, ['email'])))->value('id'),
-                'product_id' => $product?->id,
-                'product_name' => $productName,
-                'quantity' => (int) ($this->first($row, ['quantidade']) ?: 1),
-                'unit_price' => $this->money($this->first($row, ['valor do produto'])),
-                'total' => $this->money($this->first($row, ['total'])),
-                'size' => $this->first($row, ['tamanho']),
-                'color' => $this->first($row, ['cor']),
-                'fragrance' => $this->first($row, ['fragrancia']),
-                'metadata' => $row,
-            ]
-        );
+        // Carrinhos antigos do Glide nao devem virar carrinhos ativos no site.
+        // Apenas itens que pertencem a pedidos confirmados sao importados acima.
     }
 
     private function rows(string $path): iterable
