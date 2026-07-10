@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LaunchAdminAccount;
 use App\Models\SellerAccount;
 use App\Models\SellerDailyEntry;
 use Illuminate\Contracts\View\View;
@@ -13,18 +14,25 @@ use Illuminate\Support\Facades\Hash;
 
 class SellerLaunchController extends Controller
 {
-    public function index(Request $request): View|Response
+    public function loginForm(Request $request): View|RedirectResponse
+    {
+        if ($this->currentSeller($request)) {
+            return redirect()->route('launches.index');
+        }
+
+        if ($this->currentAdmin($request)) {
+            return redirect()->route('launches.admin.dashboard');
+        }
+
+        return view('launches.login');
+    }
+
+    public function index(Request $request): View|RedirectResponse|Response
     {
         $seller = $this->currentSeller($request);
 
         if (! $seller) {
-            return $this->noStoreView('launches.seller-login', [
-                'sellers' => SellerAccount::query()
-                    ->select(['id', 'name', 'city', 'state'])
-                    ->where('is_active', true)
-                    ->orderBy('name')
-                    ->get(),
-            ]);
+            return redirect()->route('launches.login.form');
         }
 
         $monthStart = now()->startOfMonth()->toDateString();
@@ -51,18 +59,33 @@ class SellerLaunchController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'seller_account_id' => ['required', 'integer', 'exists:seller_accounts,id'],
+            'email' => ['required', 'email'],
             'password' => ['required', 'string'],
         ]);
 
-        $seller = SellerAccount::query()
+        $admin = LaunchAdminAccount::query()
+            ->where('email', $validated['email'])
             ->where('is_active', true)
-            ->find($validated['seller_account_id']);
+            ->first();
 
-        if (! $seller || ! Hash::check($validated['password'], $seller->password)) {
-            return back()->withErrors(['password' => 'Vendedor ou senha inválida.'])->withInput();
+        if ($admin && Hash::check($validated['password'], $admin->password)) {
+            $request->session()->forget('launch_seller_id');
+            $request->session()->put('launch_admin_id', $admin->id);
+            $request->session()->regenerate();
+
+            return redirect()->route('launches.admin.dashboard');
         }
 
+        $seller = SellerAccount::query()
+            ->where('email', $validated['email'])
+            ->where('is_active', true)
+            ->first();
+
+        if (! $seller || ! Hash::check($validated['password'], $seller->password)) {
+            return back()->withErrors(['email' => 'E-mail ou senha invalidos.'])->withInput();
+        }
+
+        $request->session()->forget('launch_admin_id');
         $request->session()->put('launch_seller_id', $seller->id);
         $request->session()->regenerate();
 
@@ -87,7 +110,7 @@ class SellerLaunchController extends Controller
             'notes' => null,
         ]);
 
-        return redirect()->route('launches.index')->with('status', 'Lançamento salvo com sucesso.');
+        return redirect()->route('launches.index')->with('status', 'Lancamento salvo com sucesso.');
     }
 
     public function edit(Request $request, SellerDailyEntry $entry): View|RedirectResponse|Response
@@ -147,7 +170,7 @@ class SellerLaunchController extends Controller
         $request->session()->forget('launch_seller_id');
         $request->session()->regenerate();
 
-        return redirect()->route('launches.index');
+        return redirect()->route('launches.login.form');
     }
 
     private function currentSeller(Request $request): ?SellerAccount
@@ -161,6 +184,19 @@ class SellerLaunchController extends Controller
         return SellerAccount::query()
             ->where('is_active', true)
             ->find($sellerId);
+    }
+
+    private function currentAdmin(Request $request): ?LaunchAdminAccount
+    {
+        $adminId = $request->session()->get('launch_admin_id');
+
+        if (! $adminId) {
+            return null;
+        }
+
+        return LaunchAdminAccount::query()
+            ->where('is_active', true)
+            ->find($adminId);
     }
 
     private function entryData(Request $request): array

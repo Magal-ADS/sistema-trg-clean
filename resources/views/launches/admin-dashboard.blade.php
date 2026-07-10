@@ -9,6 +9,7 @@
         <div class="flex flex-col gap-2 sm:flex-row">
             <a href="{{ route('home') }}" class="inline-flex h-10 items-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Voltar para o site</a>
             <a href="{{ route('launches.admin.sellers') }}" class="inline-flex h-10 items-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Vendedores</a>
+            <a href="{{ route('launches.admin.admins') }}" class="inline-flex h-10 items-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Admins</a>
             <form action="{{ route('launches.admin.logout') }}" method="POST">
                 @csrf
                 <button class="h-10 rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-red-300 hover:text-red-600">Sair</button>

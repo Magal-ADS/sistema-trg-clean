@@ -43,7 +43,7 @@ Route::get('/carrinho', [CartItemController::class, 'index'])->name('cart.index'
 Route::get('/pedidos', [OrderController::class, 'index'])->name('orders.index');
 
 Route::get('/lancamentos', [SellerLaunchController::class, 'index'])->name('launches.index');
-Route::get('/lancamentos/login', fn () => redirect()->route('launches.index'));
+Route::get('/lancamentos/login', [SellerLaunchController::class, 'loginForm'])->name('launches.login.form');
 Route::post('/lancamentos/login', [SellerLaunchController::class, 'login'])->name('launches.login');
 Route::post('/lancamentos', [SellerLaunchController::class, 'store'])->name('launches.store');
 Route::get('/lancamentos/{entry}/editar', [SellerLaunchController::class, 'edit'])->name('launches.entries.edit');
@@ -67,6 +67,12 @@ Route::prefix('admin/lancamentos')->name('launches.admin.')->group(function (): 
     Route::post('/vendedores', [AdminLaunchController::class, 'storeSeller'])->name('sellers.store');
     Route::get('/vendedores/{seller}/editar', [AdminLaunchController::class, 'editSeller'])->name('sellers.edit');
     Route::put('/vendedores/{seller}', [AdminLaunchController::class, 'updateSeller'])->name('sellers.update');
+
+    Route::get('/admins', [AdminLaunchController::class, 'admins'])->name('admins');
+    Route::get('/admins/novo', [AdminLaunchController::class, 'createAdmin'])->name('admins.create');
+    Route::post('/admins', [AdminLaunchController::class, 'storeAdmin'])->name('admins.store');
+    Route::get('/admins/{admin}/editar', [AdminLaunchController::class, 'editAdmin'])->name('admins.edit');
+    Route::put('/admins/{admin}', [AdminLaunchController::class, 'updateAdmin'])->name('admins.update');
 
     Route::get('/entradas/{entry}/editar', [AdminLaunchController::class, 'editEntry'])->name('entries.edit');
     Route::put('/entradas/{entry}', [AdminLaunchController::class, 'updateEntry'])->name('entries.update');

@@ -14,11 +14,15 @@
 </head>
 <body class="min-h-screen bg-brand-ice text-slate-950 antialiased">
     @php
+        $launchSessionActive = session()->has('launch_admin_id') || session()->has('launch_seller_id');
+        $launchRoute = session()->has('launch_admin_id') ? 'launches.admin.dashboard' : ($launchSessionActive ? 'launches.index' : 'launches.login.form');
+        $launchLabel = $launchSessionActive ? 'Lancamentos' : 'Login';
         $mobileNavItems = [
             ['label' => 'Inicio', 'route' => 'home', 'active' => request()->routeIs('home')],
             ['label' => 'Produtos', 'route' => 'products.index', 'active' => request()->routeIs('products.*')],
             ['label' => 'Carrinho', 'route' => 'cart.index', 'active' => request()->routeIs('cart.*')],
             ['label' => 'Pedidos', 'route' => 'orders.index', 'active' => request()->routeIs('orders.*')],
+            ['label' => $launchLabel, 'route' => $launchRoute, 'active' => request()->routeIs('launches.*')],
         ];
     @endphp
 
@@ -37,7 +41,7 @@
                 >
             </form>
 
-            <nav class="ml-auto grid flex-1 grid-cols-4 items-end gap-1 text-center text-[11px] font-semibold text-slate-600 md:hidden">
+            <nav class="ml-auto grid flex-1 grid-cols-5 items-end gap-1 text-center text-[11px] font-semibold text-slate-600 md:hidden">
                 @foreach($mobileNavItems as $item)
                     <a
                         href="{{ route($item['route']) }}"
@@ -52,6 +56,7 @@
                 <a href="{{ route('products.index') }}" class="hover:text-brand-primary">Produtos</a>
                 <a href="{{ route('cart.index') }}" class="hover:text-brand-primary">Carrinho</a>
                 <a href="{{ route('orders.index') }}" class="hover:text-brand-primary">Pedidos</a>
+                <a href="{{ route($launchRoute) }}" class="rounded-md bg-brand-primary px-4 py-2 text-white hover:bg-brand-secondary">{{ $launchLabel }}</a>
             </nav>
         </div>
 
