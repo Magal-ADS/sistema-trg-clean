@@ -47,17 +47,28 @@
         </div>
 
         @if($isCheckoutStep)
-            <form action="{{ route('cart.checkout') }}" method="POST" class="mt-6 rounded-lg border border-slate-200 bg-white p-4">
+            <form action="{{ route('cart.checkout') }}" method="POST" class="mt-6 rounded-lg border border-slate-200 bg-white p-4" data-customer-form>
                 @csrf
 
                 <h2 class="text-base font-bold text-slate-950">Preencha os dados</h2>
 
+                <div class="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3" data-customer-lookup data-url="{{ route('customers.lookup') }}">
+                    <p class="text-sm font-bold text-slate-950">Ja tenho cadastro</p>
+                    <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+                        <input data-customer-lookup-cpf data-cpf-mask placeholder="Digite seu CPF" inputmode="numeric" maxlength="14" class="h-11 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary-soft">
+                        <button type="button" data-customer-lookup-button class="h-11 rounded-md bg-brand-primary px-5 text-sm font-bold text-white hover:bg-brand-secondary">
+                            Buscar
+                        </button>
+                    </div>
+                    <p class="mt-2 hidden text-sm font-medium" data-customer-lookup-message></p>
+                </div>
+
                 <div class="mt-4 grid gap-3">
-                    <input name="customer_name" value="{{ old('customer_name') }}" placeholder="Nome" required class="h-11 rounded-md border border-slate-200 bg-slate-100 px-3 text-sm outline-none focus:border-brand-secondary focus:bg-white focus:ring-2 focus:ring-brand-secondary-soft">
-                    <input name="customer_cpf" value="{{ old('customer_cpf') }}" placeholder="CPF" required class="h-11 rounded-md border border-slate-200 bg-slate-100 px-3 text-sm outline-none focus:border-brand-secondary focus:bg-white focus:ring-2 focus:ring-brand-secondary-soft">
-                    <input name="customer_phone" value="{{ old('customer_phone') }}" placeholder="Telefone com DDD" required inputmode="tel" maxlength="15" data-phone-mask class="h-11 rounded-md border border-slate-200 bg-slate-100 px-3 text-sm outline-none focus:border-brand-secondary focus:bg-white focus:ring-2 focus:ring-brand-secondary-soft">
-                    <input name="customer_address" value="{{ old('customer_address') }}" placeholder="Endereco" required class="h-11 rounded-md border border-slate-200 bg-slate-100 px-3 text-sm outline-none focus:border-brand-secondary focus:bg-white focus:ring-2 focus:ring-brand-secondary-soft">
-                    <input name="customer_reference" value="{{ old('customer_reference') }}" placeholder="Complemento / Referencia" class="h-11 rounded-md border border-slate-200 bg-slate-100 px-3 text-sm outline-none focus:border-brand-secondary focus:bg-white focus:ring-2 focus:ring-brand-secondary-soft">
+                    <input name="customer_name" value="{{ old('customer_name') }}" placeholder="Nome" required data-customer-field="name" class="h-11 rounded-md border border-slate-200 bg-slate-100 px-3 text-sm outline-none focus:border-brand-secondary focus:bg-white focus:ring-2 focus:ring-brand-secondary-soft">
+                    <input name="customer_cpf" value="{{ old('customer_cpf') }}" placeholder="CPF" required inputmode="numeric" maxlength="14" data-cpf-mask data-customer-field="cpf" class="h-11 rounded-md border border-slate-200 bg-slate-100 px-3 text-sm outline-none focus:border-brand-secondary focus:bg-white focus:ring-2 focus:ring-brand-secondary-soft">
+                    <input name="customer_phone" value="{{ old('customer_phone') }}" placeholder="Telefone com DDD" required inputmode="tel" maxlength="15" data-phone-mask data-customer-field="phone" class="h-11 rounded-md border border-slate-200 bg-slate-100 px-3 text-sm outline-none focus:border-brand-secondary focus:bg-white focus:ring-2 focus:ring-brand-secondary-soft">
+                    <input name="customer_address" value="{{ old('customer_address') }}" placeholder="Endereco" required data-customer-field="address" class="h-11 rounded-md border border-slate-200 bg-slate-100 px-3 text-sm outline-none focus:border-brand-secondary focus:bg-white focus:ring-2 focus:ring-brand-secondary-soft">
+                    <input name="customer_reference" value="{{ old('customer_reference') }}" placeholder="Complemento / Referencia" data-customer-field="reference" class="h-11 rounded-md border border-slate-200 bg-slate-100 px-3 text-sm outline-none focus:border-brand-secondary focus:bg-white focus:ring-2 focus:ring-brand-secondary-soft">
                 </div>
 
                 @php
@@ -69,7 +80,7 @@
                     <div class="mt-2 flex flex-wrap gap-2">
                         @foreach(['Empresa', 'Casa'] as $type)
                             <label class="{{ $chipClass }}">
-                                <input type="radio" name="customer_type" value="{{ $type }}" @checked(old('customer_type', 'Casa') === $type) required class="sr-only">
+                                <input type="radio" name="customer_type" value="{{ $type }}" @checked(old('customer_type', 'Casa') === $type) required data-customer-radio="type" class="sr-only">
                                 {{ $type }}
                             </label>
                         @endforeach
@@ -81,7 +92,7 @@
                     <div class="mt-2 flex flex-wrap gap-2">
                         @foreach($cities as $city)
                             <label class="{{ $chipClass }}">
-                                <input type="radio" name="city_id" value="{{ $city->id }}" @checked((int) old('city_id', $cities->first()?->id) === $city->id) required class="sr-only">
+                                <input type="radio" name="city_id" value="{{ $city->id }}" @checked((int) old('city_id', $cities->first()?->id) === $city->id) required data-customer-radio="city_id" class="sr-only">
                                 {{ $city->name }}{{ $city->state ? ' - '.$city->state : '' }}
                             </label>
                         @endforeach
@@ -93,7 +104,7 @@
                     <div class="mt-2 flex flex-wrap gap-2">
                         @foreach(['Entrega', 'Retirar na Loja'] as $fulfillment)
                             <label class="{{ $chipClass }}">
-                                <input type="radio" name="fulfillment_type" value="{{ $fulfillment }}" @checked(old('fulfillment_type', 'Retirar na Loja') === $fulfillment) required class="sr-only">
+                                <input type="radio" name="fulfillment_type" value="{{ $fulfillment }}" @checked(old('fulfillment_type', 'Retirar na Loja') === $fulfillment) required data-customer-radio="fulfillment_type" class="sr-only">
                                 {{ $fulfillment }}
                             </label>
                         @endforeach
@@ -105,7 +116,7 @@
                     <div class="mt-2 flex flex-wrap gap-2">
                         @foreach(['Pix' => 'Pix', 'Cartao' => 'Cartao'] as $paymentValue => $paymentLabel)
                             <label class="{{ $chipClass }}">
-                                <input type="radio" name="payment_method" value="{{ $paymentValue }}" @checked(old('payment_method', 'Pix') === $paymentValue) required class="sr-only">
+                                <input type="radio" name="payment_method" value="{{ $paymentValue }}" @checked(old('payment_method', 'Pix') === $paymentValue) required data-customer-radio="payment_method" class="sr-only">
                                 {{ $paymentLabel }}
                             </label>
                         @endforeach

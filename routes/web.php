@@ -3,6 +3,7 @@
 use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\AdminLaunchController;
 use App\Http\Controllers\AdminCatalogController;
+use App\Http\Controllers\CustomerLookupController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SellerLaunchController;
@@ -42,6 +43,7 @@ Route::get('/produtos/{product:slug}', [ProductController::class, 'show'])->name
 Route::post('/produtos/{product:slug}/carrinho', [CartItemController::class, 'store'])->name('cart.store');
 Route::get('/carrinho', [CartItemController::class, 'index'])->name('cart.index');
 Route::post('/carrinho/fechar', [CartItemController::class, 'checkout'])->name('cart.checkout');
+Route::get('/clientes/buscar', [CustomerLookupController::class, 'show'])->name('customers.lookup');
 Route::get('/pedidos', [OrderController::class, 'index'])->name('orders.index');
 
 Route::get('/lancamentos', [SellerLaunchController::class, 'index'])->name('launches.index');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\City;
 use App\Models\ColorType;
 use App\Models\Coupon;
 use App\Models\FragranceType;
@@ -171,23 +172,29 @@ class AdminCatalogController extends Controller
                 'model' => Order::class,
                 'readonly' => false,
                 'create' => false,
-                'search' => ['code', 'customer_name', 'customer_email', 'customer_phone'],
-                'with' => ['items'],
+                'search' => ['code', 'customer_name', 'customer_email', 'customer_cpf', 'customer_phone'],
+                'with' => ['items', 'city'],
                 'columns' => [
                     'code' => 'Codigo',
                     'customer_name' => 'Cliente',
-                    'customer_email' => 'E-mail',
+                    'customer_cpf' => 'CPF',
+                    'customer_phone' => 'Telefone',
+                    'city.name' => 'Cidade',
                     'status' => 'Status',
+                    'payment_method' => 'Pagamento',
                     'total' => 'Total',
                     'confirmed_at' => 'Confirmado em',
                 ],
                 'fields' => [
                     'customer_name' => ['label' => 'Cliente', 'type' => 'text', 'rules' => ['required', 'string', 'max:255']],
-                    'customer_email' => ['label' => 'E-mail', 'type' => 'email', 'rules' => ['required', 'email', 'max:255']],
+                    'customer_email' => ['label' => 'E-mail', 'type' => 'email', 'rules' => ['nullable', 'email', 'max:255']],
+                    'customer_cpf' => ['label' => 'CPF', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:20']],
                     'customer_phone' => ['label' => 'Telefone', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:255']],
-                    'status' => ['label' => 'Status', 'type' => 'select', 'rules' => ['required', 'string', 'max:50'], 'options' => ['confirmed' => 'Confirmado', 'pending' => 'Pendente', 'cancelled' => 'Cancelado']],
-                    'delivery_type' => ['label' => 'Entrega ou retirada', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:255']],
-                    'payment_method' => ['label' => 'Forma de pagamento', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:255']],
+                    'customer_type' => ['label' => 'Empresa ou casa', 'type' => 'select', 'rules' => ['nullable', Rule::in(['Empresa', 'Casa'])], 'options' => ['Casa' => 'Casa', 'Empresa' => 'Empresa']],
+                    'city_id' => ['label' => 'Cidade', 'type' => 'relation', 'model' => City::class, 'rules' => ['nullable', 'integer', 'exists:cities,id']],
+                    'status' => ['label' => 'Status', 'type' => 'select', 'rules' => ['required', 'string', 'max:50'], 'options' => ['pending' => 'Pendente', 'confirmed' => 'Confirmado', 'preparing' => 'Em separacao', 'delivering' => 'Em entrega', 'completed' => 'Finalizado', 'cancelled' => 'Cancelado']],
+                    'delivery_type' => ['label' => 'Entrega ou retirada', 'type' => 'select', 'rules' => ['nullable', Rule::in(['Entrega', 'Retirar na Loja'])], 'options' => ['Entrega' => 'Entrega', 'Retirar na Loja' => 'Retirar na Loja']],
+                    'payment_method' => ['label' => 'Forma de pagamento', 'type' => 'select', 'rules' => ['nullable', Rule::in(['Pix', 'Cartao'])], 'options' => ['Pix' => 'Pix', 'Cartao' => 'Cartao']],
                     'address' => ['label' => 'Endereco', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:255']],
                     'complement' => ['label' => 'Complemento', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:255']],
                     'subtotal' => ['label' => 'Subtotal', 'type' => 'money', 'rules' => ['nullable', 'numeric', 'min:0']],

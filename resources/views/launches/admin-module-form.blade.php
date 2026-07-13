@@ -19,6 +19,15 @@
                     </div>
                     <strong class="text-lg text-brand-primary">R$ {{ number_format((float) $item->total, 2, ',', '.') }}</strong>
                 </div>
+                <div class="mt-4 grid gap-3 rounded-md bg-slate-50 p-3 text-sm sm:grid-cols-2">
+                    <p><span class="font-semibold text-slate-600">Cliente:</span> {{ $item->customer_name }}</p>
+                    <p><span class="font-semibold text-slate-600">CPF:</span> {{ $item->customer_cpf ?: '-' }}</p>
+                    <p><span class="font-semibold text-slate-600">Telefone:</span> {{ $item->customer_phone ?: '-' }}</p>
+                    <p><span class="font-semibold text-slate-600">Tipo:</span> {{ $item->customer_type ?: '-' }}</p>
+                    <p><span class="font-semibold text-slate-600">Cidade:</span> {{ $item->city?->name ?: data_get($item->metadata, 'customer.city', '-') }}</p>
+                    <p><span class="font-semibold text-slate-600">Pagamento:</span> {{ $item->payment_method ?: '-' }}</p>
+                    <p class="sm:col-span-2"><span class="font-semibold text-slate-600">Entrega:</span> {{ $item->delivery_type ?: '-' }} - {{ $item->address ?: '-' }} {{ $item->complement ? ' - '.$item->complement : '' }}</p>
+                </div>
                 <div class="mt-4 divide-y divide-slate-100 text-sm">
                     @forelse($item->items as $orderItem)
                         <div class="py-3">

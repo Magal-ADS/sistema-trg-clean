@@ -15,7 +15,10 @@ class Order extends Model
         'code',
         'customer_name',
         'customer_email',
+        'customer_cpf',
         'customer_phone',
+        'customer_type',
+        'city_id',
         'delivery_type',
         'payment_method',
         'status',
@@ -49,6 +52,11 @@ class Order extends Model
     public function coupon(): BelongsTo
     {
         return $this->belongsTo(Coupon::class);
+    }
+
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
     }
 
     public function items(): HasMany

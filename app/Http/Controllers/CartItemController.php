@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\CartItem;
 use App\Models\City;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\SizeFragrancePrice;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class CartItemController extends Controller
@@ -92,6 +94,7 @@ class CartItemController extends Controller
     public function checkout(Request $request): RedirectResponse
     {
         $items = CartItem::query()
+            ->with('product:id,name')
             ->where('session_id', $request->session()->getId())
             ->get();
 
@@ -124,10 +127,12 @@ class CartItemController extends Controller
         ]);
 
         $city = City::query()->find($validated['city_id']);
+        $subtotal = $items->sum(fn (CartItem $item): float => (float) $item->total);
 
         $customer = [
             'name' => $validated['customer_name'],
             'cpf' => $validated['customer_cpf'],
+            'cpf_digits' => $this->onlyDigits($validated['customer_cpf']),
             'phone' => $validated['customer_phone'],
             'address' => $validated['customer_address'],
             'reference' => $validated['customer_reference'] ?? null,
@@ -139,16 +144,68 @@ class CartItemController extends Controller
             'payment_method' => $validated['payment_method'],
         ];
 
-        foreach ($items as $item) {
-            $metadata = $item->metadata ?? [];
-            $metadata['customer'] = $customer;
-            $metadata['checkout_confirmed_at'] = now()->toISOString();
+        $order = DB::transaction(function () use ($items, $customer, $city, $subtotal): Order {
+            $order = Order::query()->create([
+                'code' => $this->nextOrderCode(),
+                'customer_name' => $customer['name'],
+                'customer_cpf' => $customer['cpf_digits'],
+                'customer_phone' => $customer['phone'],
+                'customer_type' => $customer['type'],
+                'city_id' => $city?->id,
+                'delivery_type' => $customer['fulfillment_type'],
+                'payment_method' => $customer['payment_method'],
+                'status' => 'pending',
+                'subtotal' => $subtotal,
+                'discount' => 0,
+                'shipping' => 0,
+                'total' => $subtotal,
+                'address' => $customer['address'],
+                'complement' => $customer['reference'],
+                'confirmed_at' => now(),
+                'metadata' => [
+                    'customer' => $customer,
+                    'source' => 'site_checkout',
+                ],
+            ]);
 
-            $item->forceFill(['metadata' => $metadata])->save();
-        }
+            foreach ($items as $item) {
+                $order->items()->create([
+                    'product_id' => $item->product_id,
+                    'product_name' => $item->product_name,
+                    'size' => $item->size,
+                    'color' => $item->color,
+                    'fragrance' => $item->fragrance,
+                    'quantity' => $item->quantity,
+                    'unit_price' => $item->unit_price,
+                    'total' => $item->total,
+                    'metadata' => [
+                        'cart_item_id' => $item->id,
+                        'cart_metadata' => $item->metadata,
+                    ],
+                ]);
+            }
+
+            CartItem::query()->whereKey($items->modelKeys())->delete();
+
+            return $order;
+        });
 
         return redirect()
             ->route('cart.index')
-            ->with('status', 'Dados do pedido confirmados.');
+            ->with('status', "Pedido {$order->code} criado com sucesso.");
+    }
+
+    private function nextOrderCode(): string
+    {
+        do {
+            $code = 'PED-'.now()->format('Ymd').'-'.str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+        } while (Order::query()->where('code', $code)->exists());
+
+        return $code;
+    }
+
+    private function onlyDigits(string $value): string
+    {
+        return preg_replace('/\D+/', '', $value) ?: $value;
     }
 }
