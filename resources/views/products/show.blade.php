@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="mb-4">
-        <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('products.index') }}" class="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-brand-secondary hover:text-brand-primary">
+        <a href="{{ route('products.index') }}" class="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-brand-secondary hover:text-brand-primary">
             Voltar
         </a>
     </div>
