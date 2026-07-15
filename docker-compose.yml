@@ -7,7 +7,6 @@ services:
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
-      - vendor_data:/var/www/html/vendor
     depends_on:
       - postgres
     networks:
@@ -42,7 +41,6 @@ services:
 
 volumes:
   postgres_data:
-  vendor_data:
 
 networks:
   trg_clean:
