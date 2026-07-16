@@ -58,6 +58,7 @@ RUN apk add --no-cache --virtual .build-deps \
 WORKDIR /var/www/html
 
 COPY --from=builder /app .
+COPY storage/app/glide_backups /opt/import-data
 COPY docker/php/opcache.prod.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY docker/php/performance.ini /usr/local/etc/php/conf.d/performance.ini
 COPY docker/php/fpm-pool.conf /usr/local/etc/php-fpm.d/zz-performance.conf
