@@ -12,7 +12,7 @@ O projeto usa Laravel com PostgreSQL e possui importador de dados exportados do 
 - Vite
 - Tailwind CSS
 - Docker e Docker Compose
-
+a
 ## Funcionalidades
 
 - Home com banners, categorias e produtos em destaque.
