@@ -20,6 +20,8 @@ services:
     volumes:
       - app_storage:/var/www/html/storage
       - app_public:/var/www/html/public
+      # Temporario: disponibiliza o CSV de variacoes versionado para o import.
+      - ./storage/app/glide_backups:/var/www/html/storage/app/glide_backups:ro
     depends_on:
       db:
         condition: service_healthy
