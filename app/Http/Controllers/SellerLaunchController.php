@@ -100,8 +100,7 @@ class SellerLaunchController extends Controller
 
         $validated = $this->entryData($request);
 
-        $seller->dailyEntries()->create([
-            'entry_date' => $validated['entry_date'],
+        $seller->dailyEntries()->updateOrCreate(['entry_date' => $validated['entry_date']], [
             'presential_count' => (int) ($validated['presential_count'] ?? 0),
             'instagram_count' => (int) ($validated['instagram_count'] ?? 0),
             'whatsapp_count' => (int) ($validated['whatsapp_count'] ?? 0),

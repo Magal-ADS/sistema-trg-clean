@@ -47,9 +47,10 @@ class AdminCatalogController extends Controller
         $query = $this->baseQuery($module, $config);
 
         if ($search = $request->string('search')->trim()->toString()) {
-            $query->where(function (Builder $query) use ($config, $search): void {
+            $term = '%'.mb_strtolower($search).'%';
+            $query->where(function (Builder $query) use ($config, $term): void {
                 foreach ($config['search'] as $column) {
-                    $query->orWhere($column, 'ilike', "%{$search}%");
+                    $query->orWhereRaw("lower({$column}) like ?", [$term]);
                 }
             });
         }

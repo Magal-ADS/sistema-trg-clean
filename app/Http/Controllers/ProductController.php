@@ -12,6 +12,7 @@ class ProductController extends Controller
     public function index(Request $request): View
     {
         $products = Product::query()
+            ->where('is_unavailable', false)
             ->select([
                 'id',
                 'category_id',
@@ -35,9 +36,9 @@ class ProductController extends Controller
                 $search = $request->string('search')->toString();
 
                 $query->where(function ($query) use ($search): void {
-                    $query->where('name', 'ilike', "%{$search}%")
-                        ->orWhere('description', 'ilike', "%{$search}%")
-                        ->orWhere('sku', 'ilike', "%{$search}%");
+                    $query->whereRaw('lower(name) like ?', ['%'.mb_strtolower($search).'%'])
+                        ->orWhereRaw('lower(description) like ?', ['%'.mb_strtolower($search).'%'])
+                        ->orWhereRaw('lower(sku) like ?', ['%'.mb_strtolower($search).'%']);
                 });
             })
             ->when($request->filled('category'), function ($query) use ($request): void {
@@ -61,11 +62,14 @@ class ProductController extends Controller
 
     public function show(Product $product): View
     {
+        abort_if($product->is_unavailable, 404);
+
         return view('products.show', [
             'product' => $product->load([
                 'category:id,name,slug',
                 'subCategory:id,name,slug',
-                'variationPrices:id,product_id,size_id,fragrance_type_id,color_type_id,price,promotional_price,stock',
+                'variationPrices' => fn ($query) => $query->where('is_active', true)
+                    ->select(['id', 'product_id', 'size_id', 'fragrance_type_id', 'color_type_id', 'price', 'promotional_price', 'stock']),
                 'variationPrices.size:id,name',
                 'variationPrices.fragranceType:id,name',
                 'variationPrices.colorType:id,name,hex',

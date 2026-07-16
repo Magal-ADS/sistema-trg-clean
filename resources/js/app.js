@@ -61,11 +61,12 @@ document.querySelectorAll('[data-cpf-mask]').forEach((input) => {
 document.querySelectorAll('[data-customer-lookup]').forEach((lookup) => {
     const form = lookup.closest('[data-customer-form]');
     const cpfInput = lookup.querySelector('[data-customer-lookup-cpf]');
+    const phoneInput = lookup.querySelector('[data-customer-lookup-phone]');
     const button = lookup.querySelector('[data-customer-lookup-button]');
     const message = lookup.querySelector('[data-customer-lookup-message]');
     const url = lookup.dataset.url;
 
-    if (!form || !cpfInput || !button || !message || !url) {
+    if (!form || !cpfInput || !phoneInput || !button || !message || !url) {
         return;
     }
 
@@ -101,9 +102,10 @@ document.querySelectorAll('[data-customer-lookup]').forEach((lookup) => {
 
     button.addEventListener('click', async () => {
         const cpf = cpfInput.value.replace(/\D/g, '');
+        const phone = phoneInput.value.replace(/\D/g, '');
 
-        if (cpf.length !== 11) {
-            setMessage('Informe um CPF valido para buscar o cadastro.', 'error');
+        if (cpf.length !== 11 || phone.length < 10) {
+            setMessage('Informe CPF e telefone validos para buscar o cadastro.', 'error');
             return;
         }
 
@@ -111,7 +113,7 @@ document.querySelectorAll('[data-customer-lookup]').forEach((lookup) => {
         setMessage('Buscando cadastro...');
 
         try {
-            const response = await fetch(`${url}?cpf=${encodeURIComponent(cpf)}`, {
+            const response = await fetch(`${url}?cpf=${encodeURIComponent(cpf)}&phone=${encodeURIComponent(phone)}`, {
                 headers: { Accept: 'application/json' },
             });
 

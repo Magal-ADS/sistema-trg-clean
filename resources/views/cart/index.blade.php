@@ -54,8 +54,9 @@
 
                 <div class="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3" data-customer-lookup data-url="{{ route('customers.lookup') }}">
                     <p class="text-sm font-bold text-slate-950">Ja tenho cadastro</p>
-                    <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+                    <div class="mt-2 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
                         <input data-customer-lookup-cpf data-cpf-mask placeholder="Digite seu CPF" inputmode="numeric" maxlength="14" class="h-11 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary-soft">
+                        <input data-customer-lookup-phone data-phone-mask placeholder="Telefone com DDD" inputmode="tel" maxlength="15" class="h-11 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary-soft">
                         <button type="button" data-customer-lookup-button class="h-11 rounded-md bg-brand-primary px-5 text-sm font-bold text-white hover:bg-brand-secondary">
                             Buscar
                         </button>

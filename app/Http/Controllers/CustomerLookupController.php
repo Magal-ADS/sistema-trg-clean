@@ -14,12 +14,19 @@ class CustomerLookupController extends Controller
     {
         $validated = $request->validate([
             'cpf' => ['required', 'string', 'max:20'],
+            'phone' => ['required', 'string', 'max:30'],
         ]);
 
         $cpf = $this->onlyDigits($validated['cpf']);
+        $phone = $this->onlyDigits($validated['phone']);
+
+        if (! $this->isValidCpf($cpf) || strlen($phone) < 10) {
+            return response()->json(['message' => 'CPF ou telefone invalidos.'], 422);
+        }
 
         $order = Order::query()
             ->where('customer_cpf', $cpf)
+            ->whereRaw($this->phoneDigitsExpression('customer_phone').' = ?', [$phone])
             ->latest()
             ->first();
 
@@ -43,6 +50,7 @@ class CustomerLookupController extends Controller
         $formattedCpf = $this->formatCpf($cpf);
         $user = User::query()
             ->whereIn('cpf', array_unique([$cpf, $formattedCpf, $validated['cpf']]))
+            ->whereRaw($this->phoneDigitsExpression('phone').' = ?', [$phone])
             ->latest()
             ->first();
 
@@ -88,5 +96,33 @@ class CustomerLookupController extends Controller
         }
 
         return substr($digits, 0, 3).'.'.substr($digits, 3, 3).'.'.substr($digits, 6, 3).'-'.substr($digits, 9, 2);
+    }
+
+    private function phoneDigitsExpression(string $column): string
+    {
+        return "replace(replace(replace(replace(replace(replace(coalesce({$column}, ''), '(', ''), ')', ''), ' ', ''), '-', ''), '+', ''), '.', '')";
+    }
+
+    private function isValidCpf(string $cpf): bool
+    {
+        if (strlen($cpf) !== 11 || preg_match('/^(\d)\1{10}$/', $cpf)) {
+            return false;
+        }
+
+        for ($position = 9; $position <= 10; $position++) {
+            $sum = 0;
+            for ($index = 0; $index < $position; $index++) {
+                $sum += (int) $cpf[$index] * (($position + 1) - $index);
+            }
+            $digit = ($sum * 10) % 11;
+            if ($digit === 10) {
+                $digit = 0;
+            }
+            if ($digit !== (int) $cpf[$position]) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

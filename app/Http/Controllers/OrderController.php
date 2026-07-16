@@ -29,7 +29,7 @@ class OrderController extends Controller
             $orders = Order::query()
                 ->with(['items', 'city'])
                 ->where('customer_cpf', $cpf)
-                ->whereRaw("regexp_replace(coalesce(customer_phone, ''), '[^0-9]', '', 'g') = ?", [$phone])
+                ->whereRaw($this->phoneDigitsExpression().' = ?', [$phone])
                 ->latest()
                 ->paginate(10)
                 ->withQueryString();
@@ -59,5 +59,10 @@ class OrderController extends Controller
             'completed' => 'Finalizado',
             'cancelled' => 'Cancelado',
         ];
+    }
+
+    private function phoneDigitsExpression(): string
+    {
+        return "replace(replace(replace(replace(replace(replace(coalesce(customer_phone, ''), '(', ''), ')', ''), ' ', ''), '-', ''), '+', ''), '.', '')";
     }
 }

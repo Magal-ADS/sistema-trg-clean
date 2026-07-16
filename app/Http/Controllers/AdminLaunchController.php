@@ -308,7 +308,13 @@ class AdminLaunchController extends Controller
 
         $validated = $request->validate([
             'seller_account_id' => ['required', 'integer', 'exists:seller_accounts,id'],
-            'entry_date' => ['required', 'date'],
+            'entry_date' => [
+                'required',
+                'date',
+                Rule::unique('seller_daily_entries', 'entry_date')
+                    ->where(fn ($query) => $query->where('seller_account_id', $request->integer('seller_account_id')))
+                    ->ignore($entry),
+            ],
             'presential_count' => ['nullable', 'integer', 'min:0', 'max:99999'],
             'instagram_count' => ['nullable', 'integer', 'min:0', 'max:99999'],
             'whatsapp_count' => ['nullable', 'integer', 'min:0', 'max:99999'],

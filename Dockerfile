@@ -12,8 +12,9 @@ RUN apk add --no-cache \
     npm \
     oniguruma-dev \
     postgresql-dev \
+    sqlite-dev \
     unzip \
-    && docker-php-ext-install bcmath intl mbstring opcache pdo pdo_pgsql zip
+    && docker-php-ext-install bcmath intl mbstring opcache pdo pdo_pgsql pdo_sqlite zip
 
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY docker/php/performance.ini /usr/local/etc/php/conf.d/performance.ini

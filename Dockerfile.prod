@@ -9,10 +9,11 @@ RUN apk add --no-cache \
     npm \
     oniguruma-dev \
     postgresql-dev \
+    sqlite-dev \
     unzip \
     zip
 
-RUN docker-php-ext-install bcmath intl mbstring opcache pdo_pgsql zip
+RUN docker-php-ext-install bcmath intl mbstring opcache pdo_pgsql pdo_sqlite zip
 
 WORKDIR /app
 
@@ -40,6 +41,7 @@ RUN apk add --no-cache \
     libzip \
     oniguruma \
     postgresql-libs \
+    sqlite-libs \
     unzip \
     zip
 
@@ -48,8 +50,9 @@ RUN apk add --no-cache --virtual .build-deps \
     libzip-dev \
     oniguruma-dev \
     postgresql-dev \
+    sqlite-dev \
     $PHPIZE_DEPS \
-    && docker-php-ext-install bcmath intl mbstring opcache pcntl pdo_pgsql zip \
+    && docker-php-ext-install bcmath intl mbstring opcache pcntl pdo_pgsql pdo_sqlite zip \
     && apk del .build-deps
 
 WORKDIR /var/www/html
