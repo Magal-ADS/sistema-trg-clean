@@ -27,7 +27,8 @@ RUN npm ci
 
 COPY . .
 
-RUN cp .env.example .env \
+RUN mkdir -p bootstrap/cache \
+    && cp .env.example .env \
     && composer dump-autoload --no-dev --optimize --no-scripts \
     && php artisan package:discover --ansi \
     && npm run build \
