@@ -1,4 +1,9 @@
 *
 !private/
 !public/
+!glide_backups/
+glide_backups/*
+!glide_backups/Tamanhos.csv
+!glide_backups/Tipos de Cores.csv
+!glide_backups/Tipos de Fragrâncias.csv
 !.gitignore
