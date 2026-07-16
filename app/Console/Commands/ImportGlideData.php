@@ -98,8 +98,14 @@ class ImportGlideData extends Command
 
     private function upsertNamed(string $modelClass, array $row): void
     {
-        $glideId = $this->first($row, ['id', 'row id', 'categoria id', 'subcategoria id', 'categoria de tamanho id', 'tamanho id', 'cor id', 'fragrancia id']);
-        $name = $this->first($row, ['nome', 'name', 'categorias', 'categoria', 'categorias nome', 'sub categoria', 'tamanho', 'cor', 'fragrancia']);
+        $glideId = $this->first($row, [
+            'id', 'row id', 'categoria id', 'subcategoria id', 'categoria de tamanho id',
+            'tamanho id', 'tamanhos id', 'cor id', 'cores id', 'fragrancia id', 'fragrancias id',
+        ]);
+        $name = $this->first($row, [
+            'nome', 'name', 'categorias', 'categoria', 'categorias nome', 'sub categoria',
+            'tamanho', 'tamanhos', 'cor', 'cores', 'fragrancia', 'fragrancias',
+        ]);
 
         if (! $name && ! $glideId) {
             return;
@@ -144,16 +150,16 @@ class ImportGlideData extends Command
 
     private function upsertSize(array $row): void
     {
-        $name = $this->first($row, ['nome', 'tamanho', 'tamanhos nome']);
+        $name = $this->first($row, ['nome', 'tamanho', 'tamanhos', 'tamanhos nome']);
 
         if (! $name) {
             return;
         }
 
         Size::updateOrCreate(
-            ['glide_id' => $this->first($row, ['id', 'tamanho id']) ?: $this->stableKey($name)],
+            ['glide_id' => $this->first($row, ['id', 'tamanho id', 'tamanhos id']) ?: $this->stableKey($name)],
             [
-                'size_category_id' => $this->findByGlide(SizeCategory::class, $this->first($row, ['categoria de tamanho id']))?->id,
+                'size_category_id' => $this->findByGlide(SizeCategory::class, $this->first($row, ['categoria de tamanho id', 'cat tamanho id']))?->id,
                 'name' => $name,
                 'slug' => $this->uniqueSlug(Size::class, $name, $this->first($row, ['id', 'tamanho id'])),
                 'metadata' => $row,
