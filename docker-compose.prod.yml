@@ -31,7 +31,7 @@ services:
       && php artisan storage:link --force
       && php artisan migrate --force
       && php artisan optimize
-      && chown -R www-data:www-data storage bootstrap/cache public
+      && chown -R www-data:www-data storage/app/public storage/framework storage/logs bootstrap/cache public
       && php-fpm"
     networks:
       - trg_clean_prod
