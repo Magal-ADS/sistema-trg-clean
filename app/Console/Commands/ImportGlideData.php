@@ -58,7 +58,9 @@ class ImportGlideData extends Command
             $this->importNamed($basePath, 'Home (1).csv', fn (array $row) => $this->upsertHomeSetting($row));
             $this->importNamed($basePath, 'Users (1).csv', fn (array $row) => $this->upsertUser($row));
             $this->importNamed($basePath, 'Produtos.csv', fn (array $row) => $this->upsertProduct($row));
-            $this->importNamed($basePath, 'Valores Tamanhos e fragrancias.csv', fn (array $row) => $this->upsertVariationPrice($row));
+            // Este e o arquivo que contem a combinacao efetiva de tamanho, fragrancia,
+            // cor e preco. O Glide pode acrescentar " (1)" ao nome ao exporta-lo.
+            $this->importNamed($basePath, ['Valores Tamanhos e fragrancias (1).csv', 'Valores Tamanhos e fragrancias.csv'], fn (array $row) => $this->upsertVariationPrice($row));
             $this->importNamed($basePath, 'Serviços.csv', fn (array $row) => $this->upsertService($row));
             $this->importNamed($basePath, 'To do list.csv', fn (array $row) => $this->upsertTodo($row));
             $this->importNamed($basePath, 'Pedidos confirmados.csv', fn (array $row) => $this->upsertOrder($row));
@@ -70,15 +72,19 @@ class ImportGlideData extends Command
         return self::SUCCESS;
     }
 
-    private function importNamed(string $basePath, string $fileName, callable $callback): void
+    private function importNamed(string $basePath, string|array $fileNames, callable $callback): void
     {
-        $path = $basePath.DIRECTORY_SEPARATOR.$fileName;
+        $fileNames = (array) $fileNames;
+        $fileName = collect($fileNames)
+            ->first(fn (string $candidate): bool => file_exists($basePath.DIRECTORY_SEPARATOR.$candidate));
 
-        if (! file_exists($path)) {
-            $this->warn("Arquivo nao encontrado: {$fileName}");
+        if (! $fileName) {
+            $this->warn('Arquivo nao encontrado: '.implode(' ou ', $fileNames));
 
             return;
         }
+
+        $path = $basePath.DIRECTORY_SEPARATOR.$fileName;
 
         $count = 0;
 
@@ -263,14 +269,89 @@ class ImportGlideData extends Command
 
     private function upsertVariationPrice(array $row): void
     {
-        $product = $this->findByGlide(Product::class, $this->first($row, ['produto id', 'produto']));
+        $productGlideId = $this->first($row, ['produto id', 'produto']);
+        $productName = $this->first($row, ['nome do produto', 'produto nome']);
+        $product = $this->findByGlide(Product::class, $productGlideId);
+
+        // Permite importar este CSV mesmo quando o arquivo de produtos nao estiver
+        // presente, sem criar registros sem identificacao.
+        if (! $product && $productGlideId && $productName) {
+            $product = Product::updateOrCreate(['glide_id' => $productGlideId], [
+                'name' => $productName,
+                'slug' => $this->uniqueSlug(Product::class, $productName, $productGlideId),
+                'price' => $this->money($this->first($row, ['valor', 'valor original', 'preco'])),
+                'has_variation' => true,
+                'metadata' => ['imported_from_variations' => true],
+            ]);
+        }
+
+        // Uma variacao sem produto nao pode ser apresentada nem adicionada ao carrinho.
+        if (! $product) {
+            $this->warn("Variacao ignorada: produto ausente ({$productGlideId}).");
+
+            return;
+        }
+
+        if (! $product->has_variation) {
+            $product->update(['has_variation' => true]);
+        }
+
+        $size = $this->upsertVariationSize($row);
+        $fragrance = $this->upsertVariationNamedRelation(FragranceType::class, $row, 'fragrancia');
+        $color = $this->upsertVariationNamedRelation(ColorType::class, $row, 'cor');
         $key = $this->first($row, ['id', 'tmp chave tripla']) ?: $this->stableKey(json_encode($row));
 
         SizeFragrancePrice::updateOrCreate(['glide_id' => $key], [
-            'product_id' => $product?->id,
+            'product_id' => $product->id,
+            'size_id' => $size?->id,
+            'fragrance_type_id' => $fragrance?->id,
+            'color_type_id' => $color?->id,
             'price' => $this->money($this->first($row, ['valor', 'valor original', 'preco'])),
             'promotional_price' => $this->nullableMoney($this->first($row, ['promocao', 'valor promocional'])),
+            'is_active' => ! $this->boolean($this->first($row, ['indisponivel', 'se indisponivel', 'tmp tamanho indisponivel'])),
             'metadata' => $row,
+        ]);
+    }
+
+    private function upsertVariationSize(array $row): ?Size
+    {
+        $glideId = $this->first($row, ['tamanhos id', 'tamanho id']);
+        $name = $this->first($row, ['tamanho']);
+        $size = $this->findByGlide(Size::class, $glideId);
+
+        if ($size || ! $name) {
+            return $size;
+        }
+
+        $identifier = $glideId ?: $this->stableKey('size:'.$name);
+
+        return Size::updateOrCreate(['glide_id' => $identifier], [
+            'size_category_id' => $this->findByGlide(SizeCategory::class, $this->first($row, ['tipo de tamanho id', 'categoria de tamanho id']))?->id,
+            'name' => $name,
+            'slug' => $this->uniqueSlug(Size::class, $name, $identifier),
+            'is_active' => true,
+            'metadata' => ['imported_from_variations' => true],
+        ]);
+    }
+
+    /** @return FragranceType|ColorType|null */
+    private function upsertVariationNamedRelation(string $modelClass, array $row, string $field): FragranceType|ColorType|null
+    {
+        $glideId = $this->first($row, ["{$field} id", $field === 'cor' ? 'cores id' : "{$field}s id"]);
+        $name = $this->first($row, [$field]);
+        $model = $this->findByGlide($modelClass, $glideId);
+
+        if ($model || ! $name) {
+            return $model;
+        }
+
+        $identifier = $glideId ?: $this->stableKey("{$field}:{$name}");
+
+        return $modelClass::updateOrCreate(['glide_id' => $identifier], [
+            'name' => $name,
+            'slug' => $this->uniqueSlug($modelClass, $name, $identifier),
+            'is_active' => true,
+            'metadata' => ['imported_from_variations' => true],
         ]);
     }
 

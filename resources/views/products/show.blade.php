@@ -33,18 +33,30 @@
                 @csrf
 
                 @if($product->variationPrices->isNotEmpty())
+                    @php
+                        $variationFields = [
+                            'size' => $product->variationPrices->contains(fn ($variation) => $variation->size),
+                            'fragrance' => $product->variationPrices->contains(fn ($variation) => $variation->fragranceType),
+                            'color' => $product->variationPrices->contains(fn ($variation) => $variation->colorType),
+                        ];
+                        $variationFieldLabels = ['size' => 'Tamanho', 'fragrance' => 'Fragrância', 'color' => 'Cor'];
+                        $activeVariationFields = collect($variationFields)->filter()->keys();
+                        $variationSelectorLabel = $activeVariationFields->count() === 1
+                            ? $variationFieldLabels[$activeVariationFields->first()]
+                            : 'Variação';
+                    @endphp
                     <div>
-                        <label for="variation_id" class="text-sm font-semibold text-slate-800">Opcao</label>
+                        <label for="variation_id" class="text-sm font-semibold text-slate-800">{{ $variationSelectorLabel }}</label>
                         <select
                             id="variation_id"
                             name="variation_id"
                             required
                             class="mt-2 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-sm outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary-soft"
                         >
-                            <option value="">Selecione uma opcao</option>
+                            <option value="">Selecione {{ Str::lower($variationSelectorLabel === 'Variação' ? 'uma variação' : 'o '.$variationSelectorLabel) }}</option>
                             @foreach($product->variationPrices as $variation)
                                 @php
-                                    $variationLabel = collect([$variation->size?->name, $variation->fragranceType?->name, $variation->colorType?->name])->filter()->join(' / ') ?: 'Opcao';
+                                    $variationLabel = collect([$variation->size?->name, $variation->fragranceType?->name, $variation->colorType?->name])->filter()->join(' / ');
                                     $variationPrice = (float) ($variation->promotional_price ?: $variation->price);
                                 @endphp
                                 <option value="{{ $variation->id }}" @selected(old('variation_id') == $variation->id)>
@@ -85,7 +97,7 @@
                     <div class="mt-3 space-y-2">
                         @foreach($product->variationPrices as $variation)
                             <div class="flex items-center justify-between gap-4 rounded-md bg-slate-50 px-3 py-2 text-sm">
-                                <span>{{ collect([$variation->size?->name, $variation->fragranceType?->name, $variation->colorType?->name])->filter()->join(' / ') ?: 'Opcao' }}</span>
+                                <span>{{ collect([$variation->size?->name, $variation->fragranceType?->name, $variation->colorType?->name])->filter()->join(' / ') }}</span>
                                 <strong class="shrink-0">R$ {{ number_format((float) ($variation->promotional_price ?: $variation->price), 2, ',', '.') }}</strong>
                             </div>
                         @endforeach
