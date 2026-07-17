@@ -106,7 +106,7 @@ class SellerLaunchController extends Controller
             'whatsapp_count' => (int) ($validated['whatsapp_count'] ?? 0),
             'sales_count' => (int) ($validated['sales_count'] ?? 0),
             'sales_total' => $this->money($validated['sales_total'] ?? '0'),
-            'notes' => null,
+            'notes' => $validated['notes'] ?? null,
         ]);
 
         return redirect()->route('launches.index')->with('status', 'Lancamento salvo com sucesso.');
@@ -143,7 +143,7 @@ class SellerLaunchController extends Controller
             'whatsapp_count' => (int) ($validated['whatsapp_count'] ?? 0),
             'sales_count' => (int) ($validated['sales_count'] ?? 0),
             'sales_total' => $this->money($validated['sales_total'] ?? '0'),
-            'notes' => null,
+            'notes' => $validated['notes'] ?? null,
         ]);
 
         return redirect()->route('launches.index')->with('status', 'Lancamento atualizado com sucesso.');
@@ -207,6 +207,7 @@ class SellerLaunchController extends Controller
             'whatsapp_count' => ['nullable', 'integer', 'min:0', 'max:99999'],
             'sales_count' => ['nullable', 'integer', 'min:0', 'max:99999'],
             'sales_total' => ['nullable', 'string', 'max:30'],
+            'notes' => ['nullable', 'string', 'max:2000'],
         ]);
     }
 

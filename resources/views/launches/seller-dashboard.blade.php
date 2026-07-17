@@ -69,6 +69,9 @@
                     <label class="block text-sm font-semibold text-slate-800">Visitas
                         <input name="whatsapp_count" type="number" min="0" value="{{ old('whatsapp_count', 0) }}" class="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-secondary">
                     </label>
+                    <label class="block text-sm font-semibold text-slate-800">Observa&ccedil;&atilde;o das visitas <span class="font-normal text-slate-500">(opcional)</span>
+                        <textarea name="notes" rows="3" maxlength="2000" placeholder="Ex.: locais ou clientes visitados" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-secondary">{{ old('notes') }}</textarea>
+                    </label>
                     <label class="block text-sm font-semibold text-slate-800">Quantidade de vendas
                         <input name="sales_count" type="number" min="0" value="{{ old('sales_count', 0) }}" class="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-secondary">
                     </label>
@@ -95,6 +98,9 @@
                         <p class="mt-1 text-slate-600">
                             Liga&ccedil;&otilde;es {{ $entry->presential_count }} | Agendamentos {{ $entry->instagram_count }} | Visitas {{ $entry->whatsapp_count }} | Quantidade de vendas {{ $entry->sales_count }}
                         </p>
+                        @if($entry->notes)
+                            <p class="mt-2 whitespace-pre-line text-slate-600"><strong>Observa&ccedil;&atilde;o das visitas:</strong> {{ $entry->notes }}</p>
+                        @endif
                         <div class="mt-3 grid grid-cols-2 gap-2">
                             <a href="{{ route('launches.entries.edit', $entry) }}" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700">Editar</a>
                             <form action="{{ route('launches.entries.destroy', $entry) }}" method="POST" data-confirm-delete>

@@ -62,7 +62,12 @@
                         <tr>
                             <td class="px-4 py-3">{{ $entry->entry_date->format('d/m/Y') }}</td>
                             <td class="px-4 py-3 font-semibold">{{ $entry->seller?->name }}</td>
-                            <td class="px-4 py-3 text-slate-600">Ligações {{ $entry->presential_count }} | Agendamentos {{ $entry->instagram_count }} | Visitas {{ $entry->whatsapp_count }}</td>
+                            <td class="px-4 py-3 text-slate-600">
+                                <p>Ligações {{ $entry->presential_count }} | Agendamentos {{ $entry->instagram_count }} | Visitas {{ $entry->whatsapp_count }}</p>
+                                @if($entry->notes)
+                                    <p class="mt-1 whitespace-pre-line text-xs"><strong>Observação das visitas:</strong> {{ $entry->notes }}</p>
+                                @endif
+                            </td>
                             <td class="px-4 py-3">{{ $entry->sales_count }}</td>
                             <td class="px-4 py-3 font-bold text-brand-primary">R$ {{ number_format((float) $entry->sales_total, 2, ',', '.') }}</td>
                             <td class="px-4 py-3 text-right">

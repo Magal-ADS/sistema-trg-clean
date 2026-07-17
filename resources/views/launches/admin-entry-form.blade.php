@@ -49,6 +49,10 @@
                 </label>
             </div>
 
+            <label class="block text-sm font-semibold text-slate-800">Observa&ccedil;&atilde;o das visitas <span class="font-normal text-slate-500">(opcional)</span>
+                <textarea name="notes" rows="4" maxlength="2000" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-secondary">{{ old('notes', $entry->notes) }}</textarea>
+            </label>
+
             <div class="flex flex-col gap-3 sm:flex-row">
                 <button class="h-11 rounded-md bg-brand-primary px-5 text-sm font-bold text-white hover:bg-brand-secondary">Salvar alteracao</button>
                 <a href="{{ route('launches.admin.entries.index') }}" class="inline-flex h-11 items-center justify-center rounded-md border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Cancelar</a>

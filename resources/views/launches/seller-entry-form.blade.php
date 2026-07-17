@@ -47,6 +47,9 @@
                     <label class="block text-sm font-semibold text-slate-800">Visitas
                         <input name="whatsapp_count" type="number" min="0" value="{{ old('whatsapp_count', $entry->whatsapp_count) }}" class="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-secondary">
                     </label>
+                    <label class="block text-sm font-semibold text-slate-800">Observa&ccedil;&atilde;o das visitas <span class="font-normal text-slate-500">(opcional)</span>
+                        <textarea name="notes" rows="3" maxlength="2000" placeholder="Ex.: locais ou clientes visitados" class="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand-secondary">{{ old('notes', $entry->notes) }}</textarea>
+                    </label>
                     <label class="block text-sm font-semibold text-slate-800">Quantidade de vendas
                         <input name="sales_count" type="number" min="0" value="{{ old('sales_count', $entry->sales_count) }}" class="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-brand-secondary">
                     </label>
