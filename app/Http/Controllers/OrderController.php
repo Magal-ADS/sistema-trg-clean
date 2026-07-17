@@ -51,14 +51,7 @@ class OrderController extends Controller
 
     private function statusLabels(): array
     {
-        return [
-            'pending' => 'Pendente',
-            'confirmed' => 'Confirmado',
-            'preparing' => 'Em separacao',
-            'delivering' => 'Em entrega',
-            'completed' => 'Finalizado',
-            'cancelled' => 'Cancelado',
-        ];
+        return Order::STATUS_LABELS;
     }
 
     private function phoneDigitsExpression(): string

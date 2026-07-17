@@ -12,6 +12,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class SellerLaunchController extends Controller
 {
@@ -67,23 +69,49 @@ class SellerLaunchController extends Controller
 
         $seller->load('cityRecord:id,name,state');
 
-        $orders = Order::query()
+        $viewMode = $request->string('view')->toString() === 'kanban' ? 'kanban' : 'list';
+        $ordersQuery = Order::query()
             ->with(['items', 'city:id,name,state'])
             ->where('city_id', $seller->city_id)
-            ->latest('id')
-            ->paginate(10);
+            ->latest('id');
+
+        $orders = $viewMode === 'kanban'
+            ? $ordersQuery->get()
+            : $ordersQuery->paginate(10);
 
         return $this->noStoreView('launches.seller-orders', [
             'seller' => $seller,
             'orders' => $orders,
-            'statusLabels' => [
-                'pending' => 'Pendente',
-                'confirmed' => 'Confirmado',
-                'preparing' => 'Em separacao',
-                'delivering' => 'Em entrega',
-                'completed' => 'Finalizado',
-                'cancelled' => 'Cancelado',
-            ],
+            'statusLabels' => Order::STATUS_LABELS,
+            'viewMode' => $viewMode,
+        ]);
+    }
+
+    public function updateOrderStatus(Request $request, Order $order): JsonResponse
+    {
+        $seller = $this->currentSeller($request);
+
+        abort_unless(
+            $seller && $seller->city_id && (int) $order->city_id === (int) $seller->city_id,
+            403
+        );
+
+        $validator = Validator::make($request->all(), [
+            'status' => ['required', 'string', Rule::in(array_keys(Order::STATUS_LABELS))],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Status de pedido invalido.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $order->update(['status' => $validator->validated()['status']]);
+
+        return response()->json([
+            'status' => $order->status,
+            'label' => Order::STATUS_LABELS[$order->status],
         ]);
     }
 

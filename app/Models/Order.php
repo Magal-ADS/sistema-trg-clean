@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
+    public const STATUS_LABELS = [
+        'pending' => 'Pendente',
+        'confirmed' => 'Confirmado',
+        'preparing' => 'Em separacao',
+        'delivering' => 'Em entrega',
+        'completed' => 'Finalizado',
+        'cancelled' => 'Cancelado',
+    ];
+
     protected $fillable = [
         'glide_id',
         'user_id',

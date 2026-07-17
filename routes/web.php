@@ -50,6 +50,7 @@ Route::get('/lancamentos', [SellerLaunchController::class, 'index'])->name('laun
 Route::get('/lancamentos/login', [SellerLaunchController::class, 'loginForm'])->name('launches.login.form');
 Route::post('/lancamentos/login', [SellerLaunchController::class, 'login'])->name('launches.login');
 Route::get('/lancamentos/pedidos', [SellerLaunchController::class, 'orders'])->name('launches.orders.index');
+Route::patch('/lancamentos/pedidos/{order}/status', [SellerLaunchController::class, 'updateOrderStatus'])->name('launches.orders.status');
 Route::post('/lancamentos', [SellerLaunchController::class, 'store'])->name('launches.store');
 Route::get('/lancamentos/{entry}/editar', [SellerLaunchController::class, 'edit'])->name('launches.entries.edit');
 Route::put('/lancamentos/{entry}', [SellerLaunchController::class, 'update'])->name('launches.entries.update');
@@ -90,6 +91,8 @@ Route::prefix('admin/lancamentos')->name('launches.admin.')->group(function (): 
     Route::get('/entradas/{entry}/editar', [AdminLaunchController::class, 'editEntry'])->name('entries.edit');
     Route::put('/entradas/{entry}', [AdminLaunchController::class, 'updateEntry'])->name('entries.update');
     Route::delete('/entradas/{entry}', [AdminLaunchController::class, 'destroyEntry'])->name('entries.destroy');
+
+    Route::patch('/pedidos/{order}/status', [AdminCatalogController::class, 'updateOrderStatus'])->name('orders.status');
 
     Route::prefix('modulos/{module}')->name('modules.')->group(function (): void {
         Route::get('/', [AdminCatalogController::class, 'index'])->name('index');

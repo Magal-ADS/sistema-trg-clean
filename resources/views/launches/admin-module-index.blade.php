@@ -8,6 +8,9 @@
         </div>
         <div class="flex flex-col gap-2 sm:flex-row">
             <a href="{{ route('launches.admin.dashboard') }}" class="inline-flex h-10 items-center justify-center rounded-md border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:border-brand-secondary">Voltar</a>
+            @if($module === 'orders')
+                <a href="{{ route('launches.admin.modules.index', ['module' => 'orders', 'view' => 'kanban']) }}" class="inline-flex h-10 items-center justify-center rounded-md bg-brand-primary px-4 text-sm font-bold text-white hover:bg-brand-secondary">Visualizar Kanban</a>
+            @endif
             @if(($config['create'] ?? true) && ! ($config['readonly'] ?? false))
                 <a href="{{ route('launches.admin.modules.create', $module) }}" class="inline-flex h-10 items-center justify-center rounded-md bg-brand-primary px-4 text-sm font-bold text-white hover:bg-brand-secondary">Novo</a>
             @endif

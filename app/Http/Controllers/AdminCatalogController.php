@@ -19,8 +19,10 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -53,6 +55,14 @@ class AdminCatalogController extends Controller
                     $query->orWhereRaw("lower({$column}) like ?", [$term]);
                 }
             });
+        }
+
+        if ($module === 'orders' && $request->string('view')->toString() === 'kanban') {
+            return view('launches.admin-orders-kanban', [
+                'orders' => $query->get(),
+                'statusLabels' => Order::STATUS_LABELS,
+                'search' => $search ?? '',
+            ]);
         }
 
         return view('launches.admin-module-index', [
@@ -139,6 +149,29 @@ class AdminCatalogController extends Controller
         return redirect()->route('launches.admin.modules.index', $module)->with('status', "{$config['singular']} excluido.");
     }
 
+    public function updateOrderStatus(Request $request, Order $order): JsonResponse
+    {
+        abort_unless($this->isAdminLogged($request), 403);
+
+        $validator = Validator::make($request->all(), [
+            'status' => ['required', 'string', Rule::in(array_keys(Order::STATUS_LABELS))],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Status de pedido invalido.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $order->update(['status' => $validator->validated()['status']]);
+
+        return response()->json([
+            'status' => $order->status,
+            'label' => Order::STATUS_LABELS[$order->status],
+        ]);
+    }
+
     public static function menu(): array
     {
         return [
@@ -193,7 +226,7 @@ class AdminCatalogController extends Controller
                     'customer_phone' => ['label' => 'Telefone', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:255']],
                     'customer_type' => ['label' => 'Empresa ou casa', 'type' => 'select', 'rules' => ['nullable', Rule::in(['Empresa', 'Casa'])], 'options' => ['Casa' => 'Casa', 'Empresa' => 'Empresa']],
                     'city_id' => ['label' => 'Cidade', 'type' => 'relation', 'model' => City::class, 'rules' => ['nullable', 'integer', 'exists:cities,id']],
-                    'status' => ['label' => 'Status', 'type' => 'select', 'rules' => ['required', 'string', 'max:50'], 'options' => ['pending' => 'Pendente', 'confirmed' => 'Confirmado', 'preparing' => 'Em separacao', 'delivering' => 'Em entrega', 'completed' => 'Finalizado', 'cancelled' => 'Cancelado']],
+                    'status' => ['label' => 'Status', 'type' => 'select', 'rules' => ['required', Rule::in(array_keys(Order::STATUS_LABELS))], 'options' => Order::STATUS_LABELS],
                     'delivery_type' => ['label' => 'Entrega ou retirada', 'type' => 'select', 'rules' => ['nullable', Rule::in(['Entrega', 'Retirar na Loja'])], 'options' => ['Entrega' => 'Entrega', 'Retirar na Loja' => 'Retirar na Loja']],
                     'payment_method' => ['label' => 'Forma de pagamento', 'type' => 'select', 'rules' => ['nullable', Rule::in(['Pix', 'Cartao'])], 'options' => ['Pix' => 'Pix', 'Cartao' => 'Cartao']],
                     'address' => ['label' => 'Endereco', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:255']],

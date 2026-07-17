@@ -20,13 +20,21 @@
 
     <main class="mx-auto max-w-2xl space-y-4 px-4 py-5">
         <section class="rounded-lg border border-slate-200 bg-white p-4">
-            <p class="text-sm text-slate-500">Pedidos disponíveis para</p>
-            <p class="mt-1 font-bold text-brand-primary">
-                {{ $seller->cityRecord?->name ?: $seller->city ?: 'Cidade não vinculada' }}
-                @if($seller->cityRecord?->state || $seller->state)
-                    - {{ $seller->cityRecord?->state ?: $seller->state }}
-                @endif
-            </p>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-slate-500">Pedidos disponíveis para</p>
+                    <p class="mt-1 font-bold text-brand-primary">
+                        {{ $seller->cityRecord?->name ?: $seller->city ?: 'Cidade não vinculada' }}
+                        @if($seller->cityRecord?->state || $seller->state)
+                            - {{ $seller->cityRecord?->state ?: $seller->state }}
+                        @endif
+                    </p>
+                </div>
+                <div class="flex rounded-md border border-slate-200 bg-slate-50 p-1 text-sm font-semibold">
+                    <a href="{{ route('launches.orders.index') }}" class="rounded px-3 py-2 {{ $viewMode === 'list' ? 'bg-white text-brand-primary shadow-sm' : 'text-slate-600' }}">Lista</a>
+                    <a href="{{ route('launches.orders.index', ['view' => 'kanban']) }}" class="rounded px-3 py-2 {{ $viewMode === 'kanban' ? 'bg-white text-brand-primary shadow-sm' : 'text-slate-600' }}">Kanban</a>
+                </div>
+            </div>
         </section>
 
         @if(! $seller->city_id)
@@ -35,6 +43,15 @@
             </div>
         @endif
 
+        @if($viewMode === 'kanban')
+            @include('launches.partials.order-kanban', [
+                'orders' => $orders,
+                'statusLabels' => $statusLabels,
+                'statusRouteName' => 'launches.orders.status',
+                'showCity' => false,
+                'showEdit' => false,
+            ])
+        @else
         <section class="space-y-4">
             @forelse($orders as $order)
                 @php($status = $statusLabels[$order->status] ?? $order->status)
@@ -84,6 +101,7 @@
 
         @if($orders->hasPages())
             <div>{{ $orders->links() }}</div>
+        @endif
         @endif
     </main>
 </body>
