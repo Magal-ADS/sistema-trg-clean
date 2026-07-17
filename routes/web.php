@@ -49,6 +49,7 @@ Route::get('/pedidos', [OrderController::class, 'index'])->name('orders.index');
 Route::get('/lancamentos', [SellerLaunchController::class, 'index'])->name('launches.index');
 Route::get('/lancamentos/login', [SellerLaunchController::class, 'loginForm'])->name('launches.login.form');
 Route::post('/lancamentos/login', [SellerLaunchController::class, 'login'])->name('launches.login');
+Route::get('/lancamentos/pedidos', [SellerLaunchController::class, 'orders'])->name('launches.orders.index');
 Route::post('/lancamentos', [SellerLaunchController::class, 'store'])->name('launches.store');
 Route::get('/lancamentos/{entry}/editar', [SellerLaunchController::class, 'edit'])->name('launches.entries.edit');
 Route::put('/lancamentos/{entry}', [SellerLaunchController::class, 'update'])->name('launches.entries.update');

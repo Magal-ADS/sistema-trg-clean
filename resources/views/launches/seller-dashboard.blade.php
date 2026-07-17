@@ -14,10 +14,13 @@
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">TRG Clean</p>
                 <h1 class="text-lg font-bold">{{ $seller->name }}</h1>
             </div>
-            <form action="{{ route('launches.logout') }}" method="POST">
-                @csrf
-                <button class="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">Sair</button>
-            </form>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('launches.orders.index') }}" class="rounded-md bg-brand-primary px-3 py-2 text-sm font-semibold text-white">Pedidos</a>
+                <form action="{{ route('launches.logout') }}" method="POST">
+                    @csrf
+                    <button class="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700">Sair</button>
+                </form>
+            </div>
         </div>
     </header>
 

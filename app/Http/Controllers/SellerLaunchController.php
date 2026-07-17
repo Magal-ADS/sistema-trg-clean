@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\LaunchAdminAccount;
+use App\Models\Order;
 use App\Models\SellerAccount;
 use App\Models\SellerDailyEntry;
 use Illuminate\Contracts\View\View;
@@ -53,6 +54,36 @@ class SellerLaunchController extends Controller
                 ->latest('id')
                 ->limit(10)
                 ->get(),
+        ]);
+    }
+
+    public function orders(Request $request): RedirectResponse|Response
+    {
+        $seller = $this->currentSeller($request);
+
+        if (! $seller) {
+            return redirect()->route('launches.login.form');
+        }
+
+        $seller->load('cityRecord:id,name,state');
+
+        $orders = Order::query()
+            ->with(['items', 'city:id,name,state'])
+            ->where('city_id', $seller->city_id)
+            ->latest('id')
+            ->paginate(10);
+
+        return $this->noStoreView('launches.seller-orders', [
+            'seller' => $seller,
+            'orders' => $orders,
+            'statusLabels' => [
+                'pending' => 'Pendente',
+                'confirmed' => 'Confirmado',
+                'preparing' => 'Em separacao',
+                'delivering' => 'Em entrega',
+                'completed' => 'Finalizado',
+                'cancelled' => 'Cancelado',
+            ],
         ]);
     }
 
