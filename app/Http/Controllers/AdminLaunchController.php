@@ -138,7 +138,7 @@ class AdminLaunchController extends Controller
             'cities' => City::query()
                 ->where(function ($query) use ($seller): void {
                     $query->where('is_active', true)
-                        ->orWhereKey($seller->city_id);
+                        ->orWhere('id', $seller->city_id);
                 })
                 ->orderBy('name')
                 ->get(),
